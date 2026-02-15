@@ -26,7 +26,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading }) =
     };
 
     return (
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-6 custom-scrollbar min-h-0">
             <AnimatePresence>
                 {messages.map((msg) => (
                     <motion.div

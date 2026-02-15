@@ -56,7 +56,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading }) => {
     };
 
     return (
-        <div className="p-4 border-t border-white/10 bg-zinc-900/90 backdrop-blur-sm relative overflow-hidden">
+        <div className="relative overflow-hidden transition-all duration-300">
             {/* Visual Feedback for Voice */}
             {isListening && (
                 <div className={`absolute -top-10 left-1/2 -translate-x-1/2 bg-gradient-to-r ${ui.gradient} text-white text-xs px-3 py-1 rounded-full animate-pulse flex items-center gap-2 shadow-lg`}>
