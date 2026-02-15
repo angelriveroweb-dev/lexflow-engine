@@ -156,8 +156,7 @@ export const LegalBotWidget: React.FC<LegalBotWidgetProps> = ({ webhookUrl, clie
                         animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
                         exit={{ opacity: 0, y: 100, scale: 0.9, filter: "blur(10px)" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed inset-0 z-[100] md:inset-auto md:bottom-24 md:right-6 w-full h-full md:w-[420px] md:h-[650px] md:max-h-[85vh] flex flex-col bg-zinc-950/40 backdrop-blur-2xl border border-white/10 md:rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] overflow-hidden overflow-x-hidden"
-                        style={{ maxWidth: '100%', width: '100%', boxSizing: 'border-box' }}
+                        className="fixed inset-0 z-[100] md:inset-auto md:bottom-24 md:right-6 w-full h-full md:w-[420px] md:h-[650px] md:max-h-[85vh] flex flex-col bg-zinc-950/40 backdrop-blur-2xl border border-white/10 md:rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] overflow-hidden"
                     >
                         <div className="p-5 border-b border-white/5 bg-white/5 backdrop-blur-md flex items-center justify-between">
                             <div className="flex items-center gap-4">
