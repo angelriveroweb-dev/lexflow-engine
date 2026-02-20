@@ -1,11 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-
 import { config } from '../config';
 import { getVisitorId } from '@/lib/analytics';
-import { getTrafficSource } from '@/lib/traffic';
 
-
-// Types
 export interface Message {
     id: string;
     text?: string;
@@ -13,9 +9,12 @@ export interface Message {
     video?: string;
     sender: 'user' | 'bot';
     timestamp: Date;
-    sources?: Array<{ title: string; url: string }>;
-    escalate?: boolean;
     options?: string[];
+    action?: string;
+    file?: { name: string; type: string; url?: string };
+    suggestions?: string[];
+    sources?: { title: string; url: string }[];
+    escalate?: boolean;
 }
 
 export interface UseChatProps {
@@ -25,205 +24,159 @@ export interface UseChatProps {
 export const useChat = ({ clientId }: UseChatProps) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [sessionId, setSessionId] = useState<string>('');
     const [isOpen, setIsOpen] = useState(false);
 
-    const { typebot, apiHost } = config.chatbot;
+    // Persistent Session ID (Simple)
+    const [sessionId] = useState(() => {
+        if (typeof window === 'undefined') return '';
+        const stored = localStorage.getItem('simple_chat_session_id');
+        if (stored) return stored;
+        const newId = crypto.randomUUID();
+        localStorage.setItem('simple_chat_session_id', newId);
+        return newId;
+    });
 
-    // Helper to parse Typebot responses (text, images, videos, choices)
-    const parseTypebotResponse = (data: any): Partial<Message>[] => {
-        const messages: Partial<Message>[] = [];
-
-        if (data.messages) {
-            data.messages.forEach((msg: any) => {
-                const newMsg: Partial<Message> = {};
-
-                if (msg.type === 'text') {
-                    // Extract text from richText structure or direct content
-                    if (msg.content?.richText) {
-                        newMsg.text = msg.content.richText
-                            .map((block: any) => {
-                                const children = block.children || [];
-                                return children.map((child: any) => child.text || '').join('');
-                            })
-                            .join('\n');
-                    } else if (typeof msg.content === 'string') {
-                        newMsg.text = msg.content;
-                    } else if (msg.content?.text) {
-                        newMsg.text = msg.content.text;
-                    }
-                } else if (msg.type === 'image') {
-                    newMsg.image = msg.content?.url || msg.url || msg.content;
-                } else if (msg.type === 'video' || msg.type === 'gif' || msg.type === 'video input') {
-                    newMsg.video = msg.content?.url || msg.url || msg.content;
-                } else if (msg.type === 'embed') {
-                    newMsg.video = msg.content?.url || msg.url || msg.content;
-                }
-
-                if (newMsg.text || newMsg.image || newMsg.video) {
-                    messages.push(newMsg);
-                }
-            });
-        }
-
-        const input = data.input;
-        if (input && (input.type === 'choice' || input.type === 'buttons' || input.type === 'choice input' || input.type?.includes('choice'))) {
-            const items = input.items || [];
-            const options = items.map((item: any) => item.content || item.label || item.item || item.text);
-
-            if (options.length > 0) {
-                if (messages.length > 0) {
-                    messages[messages.length - 1].options = options;
-                } else {
-                    messages.push({ text: 'Selecciona una opción:', options });
-                }
-            }
-        }
-
-        return messages;
-    };
-
-    // 1. Initialize Session & Load History or Start New
+    // Load History
     useEffect(() => {
-        const initChat = async () => {
-            let storedSessionId = localStorage.getItem('chat_session_id');
-            const storedMessages = localStorage.getItem(`chat_history_${storedSessionId}`);
-
-            if (storedSessionId && storedMessages) {
-                setSessionId(storedSessionId);
-                try {
-                    const parsed = JSON.parse(storedMessages);
-                    setMessages(parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
-                } catch (e) {
-                    console.error("Failed to parse chat history", e);
-                }
-            } else {
-                // Call Typebot startChat
-                setIsLoading(true);
-                try {
-                    const response = await fetch(`${apiHost}/api/v1/typebots/${typebot}/startChat`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            isStreamEnabled: false,
-                            prefilledVariables: {
-                                "Client ID": clientId,
-                                "Platform": "Web / Escobar Legal",
-                                "URL": window.location.href,
-                                "Visitor ID": getVisitorId(),
-                                "Traffic Source": getTrafficSource()
-                            }
-                        })
-                    });
-                    const data = await response.json();
-
-                    if (data.sessionId) {
-                        setSessionId(data.sessionId);
-                        setIsLoading(false);
-                    }
-
-                    const botMsgsData = parseTypebotResponse(data);
-                    const newMessages: Message[] = botMsgsData.map((m, i) => ({
-                        id: `init-${i}`,
-                        text: m.text,
-                        image: m.image,
-                        video: m.video,
-                        options: m.options,
-                        sender: 'bot',
-                        timestamp: new Date()
-                    }));
-
-                    if (newMessages.length === 0) {
-                        newMessages.push({
-                            id: 'init-default',
-                            text: config.chatbot.messages.welcome,
-                            sender: 'bot',
-                            timestamp: new Date()
-                        });
-                    }
-
-                    setMessages(newMessages);
-                } catch (error) {
-                    console.error("Failed to start Typebot chat", error);
-                } finally {
-                    setIsLoading(false);
-                }
+        if (!sessionId) return;
+        const storedMessages = localStorage.getItem(`simple_chat_history_${sessionId}`);
+        if (storedMessages) {
+            try {
+                const parsed = JSON.parse(storedMessages);
+                setMessages(parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
+            } catch (e) {
+                console.error("Failed to parse history", e);
             }
-        };
+        } else {
+            // Initial Welcome Message
+            setMessages([{
+                id: 'welcome',
+                text: config.chatbot.messages.welcome,
+                sender: 'bot',
+                timestamp: new Date()
+            }]);
+        }
+    }, [sessionId]);
 
-        initChat();
-    }, [typebot, apiHost, clientId]);
-
-    // 2. Persist Messages on Change
+    // Save History
     useEffect(() => {
-        if (sessionId && messages.length > 0) {
-            localStorage.setItem(`chat_history_${sessionId}`, JSON.stringify(messages));
+        if (messages.length > 0 && sessionId) {
+            localStorage.setItem(`simple_chat_history_${sessionId}`, JSON.stringify(messages));
         }
     }, [messages, sessionId]);
 
-    // 3. Send Message Logic
-    const sendMessage = useCallback(async (text: string) => {
-        if (!text.trim() || !sessionId) return;
+    const sendMessage = useCallback(async (text: string, file?: File) => {
+        if ((!text.trim() && !file)) return;
 
         const userMsg: Message = {
-            id: window.crypto.randomUUID(),
+            id: crypto.randomUUID(),
             text,
             sender: 'user',
-            timestamp: new Date()
+            timestamp: new Date(),
+            file: file ? { name: file.name, type: file.type, url: URL.createObjectURL(file) } : undefined
         };
 
         setMessages(prev => [...prev, userMsg]);
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${apiHost}/api/v1/sessions/${sessionId}/continueChat`, {
+            const formData = new FormData();
+            formData.append('sessionId', sessionId);
+            formData.append('text', text);
+            formData.append('clientId', clientId);
+            formData.append('visitorId', getVisitorId());
+
+            if (file) {
+                formData.append('file', file);
+                formData.append('action', 'file_upload');
+            } else {
+                formData.append('action', 'user_message');
+            }
+
+            // Direct n8n Webhook
+            const webhookUrl = config.chatbot.n8nWebhook || config.chatbot.webhookUrl;
+
+            const response = await fetch(webhookUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: text
-                })
+                body: formData,
             });
 
-            if (!response.ok) throw new Error('Network response was not ok');
+            if (!response.ok) throw new Error(`Webhook error: ${response.status}`);
 
             const data = await response.json();
-            const botMsgsData = parseTypebotResponse(data);
+            console.log("n8n Response:", data);
 
-            const botMessages: Message[] = botMsgsData.map(m => ({
-                id: window.crypto.randomUUID(),
-                text: m.text,
-                image: m.image,
-                video: m.video,
-                options: m.options,
+            // Flexible Parsing logic
+            let botText = '';
+            let suggestions: string[] = [];
+            let action: string | undefined = undefined;
+
+            // Normalize data to an object (handle n8n array)
+            const normalizedData = Array.isArray(data) && data.length > 0 ? data[0] : data;
+
+            if (typeof normalizedData === 'object' && normalizedData !== null) {
+                botText = normalizedData.text || normalizedData.output || normalizedData.message || '';
+                suggestions = normalizedData.suggestions || normalizedData.options || [];
+                action = normalizedData.action;
+
+                // CRITICAL: If the text itself is JS (e.g. LLM returned a stringified JSON with markers)
+                if (typeof botText === 'string' && (botText.trim().startsWith('{') || botText.trim().includes('```json'))) {
+                    try {
+                        let cleanText = botText.trim();
+                        if (cleanText.includes('```json')) {
+                            // Extract content between backticks
+                            const match = cleanText.match(/```json\s*([\s\S]*?)\s*```/);
+                            if (match) cleanText = match[1].trim();
+                        }
+
+                        const parsed = JSON.parse(cleanText);
+                        if (parsed.text) botText = parsed.text;
+                        if (parsed.suggestions) suggestions = parsed.suggestions;
+                        if (parsed.action) action = parsed.action;
+                    } catch (e) {
+                        console.warn("Failed to parse botText as JSON fallback", e);
+                    }
+                }
+            } else if (typeof normalizedData === 'string') {
+                botText = normalizedData;
+            }
+
+            const botMsg: Message = {
+                id: crypto.randomUUID(),
+                text: botText,
                 sender: 'bot',
                 timestamp: new Date(),
-                escalate: config.chatbot.messages.negativeIntentKeywords.some(keyword =>
-                    text.toLowerCase().includes(keyword)
-                )
-            }));
+                suggestions: suggestions.length > 0 ? suggestions : (normalizedData.suggestions || normalizedData.options || []),
+                options: suggestions.length > 0 ? suggestions : (normalizedData.suggestions || normalizedData.options || []),
+                action: action,
+                image: normalizedData.image,
+                video: normalizedData.video
+            };
 
-            setMessages(prev => [...prev, ...botMessages]);
+            setMessages(prev => [...prev, botMsg]);
 
         } catch (error) {
-            console.error('Error continuing Typebot chat:', error);
+            console.error('Chat Error:', error);
             setMessages(prev => [...prev, {
-                id: window.crypto.randomUUID(),
-                text: config.chatbot.messages.error,
+                id: crypto.randomUUID(),
+                text: "Lo siento, hubo un problema de conexión. Por favor, intenta de nuevo.",
                 sender: 'bot',
                 timestamp: new Date()
             }]);
         } finally {
             setIsLoading(false);
         }
-    }, [sessionId, apiHost]);
+    }, [sessionId, clientId]);
 
     const clearHistory = () => {
-        localStorage.removeItem('chat_session_id');
-        if (sessionId) {
-            localStorage.removeItem(`chat_history_${sessionId}`);
-        }
-        setSessionId('');
-        setMessages([]);
+        localStorage.removeItem(`simple_chat_history_${sessionId}`);
+        localStorage.removeItem('simple_chat_session_id');
+        setMessages([{
+            id: 'welcome-reset',
+            text: config.chatbot.messages.welcome,
+            sender: 'bot',
+            timestamp: new Date()
+        }]);
         window.location.reload();
     };
 
@@ -233,6 +186,7 @@ export const useChat = ({ clientId }: UseChatProps) => {
         sendMessage,
         clearHistory,
         isOpen,
-        setIsOpen
+        setIsOpen,
+        sessionId
     };
 };

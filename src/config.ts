@@ -37,7 +37,10 @@ export const config = {
             error: "Error de conexión. Por favor intente nuevamente.",
             fallback: "Disculpe, no he comprendido. ¿Podría reformular?",
             negativeIntentKeywords: ['no me sirve', 'inútil', 'basura', 'humano', 'persona']
-        }
+        },
+        // Hybrid AI Agent Webhook (n8n)
+        n8nWebhook: "https://n8n.angelstudio.design/webhook/chat",
+        webhookUrl: "https://n8n.angelstudio.design/webhook/chat",
     },
 
     // Dynamic Content (Architecture of Persuasion)

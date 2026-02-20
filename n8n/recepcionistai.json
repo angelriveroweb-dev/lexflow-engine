@@ -1,0 +1,384 @@
+{
+    "name": "Recepcionista AI - Legal Escobar",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "chat",
+                "responseMode": "responseNode",
+                "options": {
+                    "allowedOrigins": "*"
+                }
+            },
+            "id": "webhook-chat",
+            "name": "Webhook (Chat)",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1.1,
+            "position": [
+                380,
+                340
+            ],
+            "webhookId": "187f7214-634a-4ba4-ae42-f1518eb50fa2"
+        },
+        {
+            "parameters": {
+                "dataType": "string",
+                "value1": "={{ $json.body.action }}",
+                "rules": {
+                    "rules": [
+                        {
+                            "value2": "file_upload"
+                        },
+                        {
+                            "value2": "file_upload"
+                        },
+                        {
+                            "value2": "user_message",
+                            "output": 1
+                        },
+                        {
+                            "value2": "get_availability",
+                            "output": 2
+                        }
+                    ]
+                }
+            },
+            "id": "switch-action",
+            "name": "Router de Acción",
+            "type": "n8n-nodes-base.switch",
+            "typeVersion": 1,
+            "position": [
+                600,
+                340
+            ]
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "=https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin={{ $json.body.date }}T00:00:00Z&timeMax={{ $json.body.date }}T23:59:59Z&singleEvents=true",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "googleApi",
+                "options": {}
+            },
+            "id": "fetch-calendar-busy",
+            "name": "Fetch Calendar Busy",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                820,
+                640
+            ],
+            "credentials": {
+                "googleApi": {
+                    "id": "JyHXuGtPXmmi0GnY",
+                    "name": "calendar"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// Extraer horarios ocupados\nconst events = $input.first().json.items || [];\nconst busySlots = events.map(e => {\n  const date = new Date(e.start.dateTime || e.start.date);\n  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;\n});\n\nreturn {\n  busySlots\n};"
+            },
+            "id": "process-busy-slots",
+            "name": "Process Busy Slots",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1040,
+                640
+            ]
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "sessionId",
+                            "name": "sessionId",
+                            "value": "={{ $json.body.sessionId }}",
+                            "type": "string"
+                        },
+                        {
+                            "name": "chatInput",
+                            "value": "={{ $json.body.text }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "set-session-id",
+            "name": "Set Session ID",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                820,
+                480
+            ]
+        },
+        {
+            "parameters": {
+                "options": {
+                    "systemMessage": "=Eres 'Agente Legal', asistente virtual de Escobar & Asociados.\n\nTU RESPONSABILIDAD PRINCIPAL:\nResponder preguntas legales básicas y captar datos de clientes potenciales.\n\nESTRUCTURA DE RESPUESTA OBLIGATORIA (JSON):\nDebes devolver SIEMPRE un JSON válido con esta estructura:\n{\n  \"text\": \"Tu respuesta amable aquí...\",\n  \"suggestions\": [\"Opción 1\", \"Opción 2\"],\n  \"action\": \"optional_action_key\"\n}\n\nREGLAS DE NEGOCIO:\n1. Si el usuario pregunta precios -> \"action\": \"show_payment_gateway\".\n2. Si el usuario quiere agendar una cita (y aún no ha elegido fecha/hora) -> Responde con \"action\": \"schedule_appointment\".\n3. MUY IMPORTANTE: Si el mensaje del usuario ya contiene una fecha y hora elegida (ej: \"Agendar para el...\"), NO devuelvas ninguna acción de calendario. En ese caso, solo confirma la recepción y pide los datos faltantes (Nombre y Email).\n4. Si el usuario saluda -> \"suggestions\": [\"Consultar Precio\", \"Agendar Cita\", \"Hablar con Humano\"].\n5. NO inventes leyes. Consulta tu base de conocimiento.\n6. Si faltan datos de contacto (Nombre, Email), pídelos amablemente para finalizar la reserva."
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1.6,
+            "position": [
+                1040,
+                480
+            ],
+            "id": "ai-agent",
+            "name": "Agente Legal AI"
+        },
+        {
+            "parameters": {
+                "content": "## Mock de Archivos\nSimulamos que procesamos el archivo y le avisamos al agente."
+            },
+            "id": "note-file",
+            "name": "Nota",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                800,
+                180
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "return {\n  json: {\n    output: `He recibido tu archivo \"${$json.body.file.name}\". Lo estoy analizando para darte una respuesta precisa.`,\n    suggestions: ['Ver análisis preliminar', 'Subir otro documento'],\n    action: 'analyzing_document'\n  }\n};"
+            },
+            "id": "mock-file-process",
+            "name": "Procesar Archivo (Mock)",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                860,
+                240
+            ]
+        },
+        {
+            "parameters": {
+                "modelName": "models/gemini-1.5-pro",
+                "options": {
+                    "temperature": 0.2
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+            "typeVersion": 1,
+            "position": [
+                1000,
+                700
+            ],
+            "id": "google-vertex-model",
+            "name": "Google Vertex (Gemini Pro)",
+            "credentials": {
+                "googleApi": {
+                    "id": "HGKnkFRmPySzScPs",
+                    "name": "open code"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "contextWindowLength": 10
+            },
+            "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+            "typeVersion": 1.3,
+            "position": [
+                1160,
+                700
+            ],
+            "id": "memory",
+            "name": "Memoria Buffer"
+        },
+        {
+            "parameters": {
+                "toolDescription": "Consulta disponibilidad en el calendario. Devuelve horarios libres.",
+                "url": "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "googleApi",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequestTool",
+            "typeVersion": 4.3,
+            "position": [
+                1260,
+                600
+            ],
+            "id": "calendar-tool",
+            "name": "Consultar Disponibilidad",
+            "credentials": {
+                "googleApi": {
+                    "id": "JyHXuGtPXmmi0GnY",
+                    "name": "calendar"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// Adaptador de Salida: Asegurar formato JSON para el Frontend\ntry {\n  let rawOutput = $input.first().json.output || $input.first().json.text || \"\";\n  \n  // 1. Si es un objeto ya, lo devolvemos\n  if (typeof rawOutput === 'object') return rawOutput;\n\n  // 2. Si es un string, intentamos limpiar y parsear\n  if (typeof rawOutput === 'string') {\n      let clean = rawOutput.trim();\n      \n      // Manejar bloques de código markdown ```json ... ```\n      if (clean.includes('```json')) {\n          const match = clean.match(/```json\\s*([\\s\\S]*?)\\s*```/);\n          if (match) clean = match[1].trim();\n      }\n\n      if (clean.startsWith('{')) {\n          const parsed = JSON.parse(clean);\n          return {\n              text: parsed.text || \"\",\n              suggestions: parsed.suggestions || ['Más información', 'Agendar cita'],\n              action: parsed.action || null\n          };\n      }\n  }\n\n  // 3. Si es texto plano, envolvemos en estructura estándar\n  return {\n      text: rawOutput,\n      suggestions: ['Más información', 'Agendar cita'],\n      action: null\n  };\n} catch (e) {\n  return {\n      text: String($input.first().json.output || \"Disculpa, ocurrió un error.\"),\n      suggestions: ['Intentar nuevamente'],\n      action: null\n  };\n}"
+            },
+            "id": "format-response",
+            "name": "Formatear Respuesta",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1400,
+                480
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ $json }}",
+                "options": {}
+            },
+            "id": "response-node",
+            "name": "Responder al Webhook",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                1620,
+                340
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook (Chat)": {
+            "main": [
+                [
+                    {
+                        "node": "Router de Acción",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Router de Acción": {
+            "main": [
+                [
+                    {
+                        "node": "Procesar Archivo (Mock)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Set Session ID",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Fetch Calendar Busy",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch Calendar Busy": {
+            "main": [
+                [
+                    {
+                        "node": "Process Busy Slots",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Process Busy Slots": {
+            "main": [
+                [
+                    {
+                        "node": "Responder al Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Set Session ID": {
+            "main": [
+                [
+                    {
+                        "node": "Agente Legal AI",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Google Vertex (Gemini Pro)": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Agente Legal AI",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Memoria Buffer": {
+            "ai_memory": [
+                [
+                    {
+                        "node": "Agente Legal AI",
+                        "type": "ai_memory",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Consultar Disponibilidad": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "Agente Legal AI",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Agente Legal AI": {
+            "main": [
+                [
+                    {
+                        "node": "Formatear Respuesta",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Procesar Archivo (Mock)": {
+            "main": [
+                [
+                    {
+                        "node": "Formatear Respuesta",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Formatear Respuesta": {
+            "main": [
+                [
+                    {
+                        "node": "Responder al Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

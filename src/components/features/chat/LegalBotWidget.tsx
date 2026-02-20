@@ -18,7 +18,7 @@ const HOOK_MESSAGES = [
 ];
 
 export const LegalBotWidget: React.FC<LegalBotWidgetProps> = ({ clientId }) => {
-    const { messages, isLoading, sendMessage, isOpen, setIsOpen, clearHistory } = useChat({ clientId });
+    const { messages, isLoading, sendMessage, isOpen, setIsOpen, clearHistory, sessionId } = useChat({ clientId });
     const { ui } = config.chatbot;
 
     const [hookIndex, setHookIndex] = useState(0);
@@ -191,7 +191,7 @@ export const LegalBotWidget: React.FC<LegalBotWidgetProps> = ({ clientId }) => {
 
                         {/* Body - Custom Chat Components */}
                         <div className="flex-1 overflow-hidden relative flex flex-col">
-                            <ChatWindow messages={messages} isLoading={isLoading} onSend={sendMessage} />
+                            <ChatWindow messages={messages} isLoading={isLoading} onSend={sendMessage} sessionId={sessionId} />
                         </div>
 
                         {/* Chat Input and Branding */}
