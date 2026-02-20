@@ -87,6 +87,14 @@ export const useChat = ({ clientId }: UseChatProps) => {
             formData.append('clientId', clientId);
             formData.append('visitorId', getVisitorId());
 
+            // Standard n8n/Typebot metadata format
+            formData.append('metadata', JSON.stringify({
+                clientId,
+                visitorId: getVisitorId(),
+                url: typeof window !== 'undefined' ? window.location.href : '',
+                timestamp: new Date().toISOString()
+            }));
+
             if (file) {
                 formData.append('file', file);
                 formData.append('action', 'file_upload');
