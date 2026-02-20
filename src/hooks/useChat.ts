@@ -53,7 +53,8 @@ export const useChat = ({ clientId }: UseChatProps) => {
                 id: 'welcome',
                 text: config.chatbot.messages.welcome,
                 sender: 'bot',
-                timestamp: new Date()
+                timestamp: new Date(),
+                options: (config.chatbot.messages as any).suggestions || []
             }]);
         }
     }, [sessionId]);
@@ -175,7 +176,8 @@ export const useChat = ({ clientId }: UseChatProps) => {
             id: 'welcome-reset',
             text: config.chatbot.messages.welcome,
             sender: 'bot',
-            timestamp: new Date()
+            timestamp: new Date(),
+            options: (config.chatbot.messages as any).suggestions || []
         }]);
         window.location.reload();
     };

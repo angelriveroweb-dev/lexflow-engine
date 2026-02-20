@@ -33,6 +33,13 @@ export const config = {
         },
         messages: {
             welcome: "Bienvenido a Escobar & Asociados. ¿En qué asunto legal podemos asistirle hoy?",
+            suggestions: [
+                "⚖️ Asesoría de Divorcio",
+                "👶 Pensión Alimenticia",
+                "💼 Despido Injustificado",
+                "📅 Agendar Cita",
+                "💰 Costos de Servicios"
+            ],
             reset: "Conversación reiniciada.",
             error: "Error de conexión. Por favor intente nuevamente.",
             fallback: "Disculpe, no he comprendido. ¿Podría reformular?",
