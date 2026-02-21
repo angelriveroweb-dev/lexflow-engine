@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lexflow-engine</title>
+</head>
+
+<body>
+  <!-- En desarrollo, inyectamos el bundle directamente -->
+  <script type="module" src="/src/main.tsx"></script>
+  <script type="module">
+    // Esperamos a que el módulo se cargue
+    window.addEventListener('load', () => {
+      if (window.LexFlow) {
+        window.LexFlow.init({
+          id: 'demo',
+          supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+          supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

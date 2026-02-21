@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexFlow Engine Test</title>
+    <!-- CSS del Engine -->
+    <link rel="stylesheet" href="../dist/lexflow.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #1e293b;
+        }
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 2rem;
+            background: white;
+            border-radius: 1rem;
+            shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        h1 { color: #0f3460; margin-bottom: 1rem; }
+        p { line-height: 1.6; color: #64748b; }
+        code { background: #e2e8f0; padding: 0.2rem 0.4rem; rounded: 4px; }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <h1>🚀 LexFlow Core Engine</h1>
+        <p>Esta es una demostración de la inyección standalone del motor LexFlow.</p>
+        <p>El script inferior se encarga de:</p>
+        <ul style="text-align: left; display: inline-block;">
+            <li>Cargar el Virtual DOM de React de forma aislada.</li>
+            <li>Consultar la configuración dinámica (ID: <code>demo</code>).</li>
+            <li>Inyectar el Widget en el body sin colisionar con estilos existentes.</li>
+        </ul>
+    </div>
+
+    <!-- Script del Engine con auto-init -->
+    <!-- En producción, el 'src' apuntaría a una CDN -->
+    <script src="../dist/lexflow.iife.js" data-bot-id="demo"></script>
+
+</body>
+</html>

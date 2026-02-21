@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LexFlow - Test Local CDN</title>
+    <!-- Cargamos el CSS local -->
+    <link rel="stylesheet" href="./dist/lexflow.css">
+</head>
+
+<body style="background-color: #f3f4f6; font-family: sans-serif;">
+
+    <div style="padding: 2rem; text-align: center;">
+        <h1>Probando LexFlow Engine (Local Build)</h1>
+        <p>Este archivo usa los archivos dentro de la carpeta <b>dist/</b></p>
+        <p>Si ves el widget abajo a la derecha, ¡el build funciona!</p>
+    </div>
+
+    <!-- Cargamos el JS local -->
+    <script src="./dist/lexflow.iife.js"></script>
+
+    <script>
+        // Inicializamos el bot
+        // Usamos 'demo' para que cargue la configuración de prueba
+        window.addEventListener('load', () => {
+            if (window.LexFlow) {
+                window.LexFlow.init({
+                    id: 'demo'
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
