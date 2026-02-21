@@ -31,9 +31,9 @@ Carga el JS y llama al método `init`:
 | Parámetro | Tipo | Requerido | Descripción |
 | :--- | :--- | :---: | :--- |
 | `id` | `string` | Sí | EL ID único del bot (ej: `demo` o ID de Supabase). |
-| `metadata` | `object` | No | Objeto con datos extra (UTMs, usuario logueado, etc) que se envían al webhook. |
+| `metadata` | `object` | Sí | Objeto con datos extra (UTMs, usuario logueado, etc) que se envían al webhook. |
+| `webhookUrl` | `string` | Sí | URL del webhook para procesar mensajes. Inyectado como prioridad sobre Supabase. |
 | `sessionId` | `string` | No | Fuerza un ID de sesión externo. Si no se provee, se genera uno persistente. |
-| `webhookUrl` | `string` | No | URL del webhook para procesar mensajes. Inyectado como prioridad sobre Supabase. |
 | `container` | `HTMLElement` | No | Elemento donde se renderizará el chat. Por defecto crea uno en el `body`. |
 
 ---
@@ -72,9 +72,9 @@ Crea o añade a tu archivo de tipos (ej: `types.d.ts` o `globals.d.ts`):
 ```typescript
 interface LexFlowOptions {
   id: string;
-  metadata?: Record<string, any>;
+  metadata: Record<string, any>;
+  webhookUrl: string;
   sessionId?: string;
-  webhookUrl?: string;
   container?: HTMLElement;
   supabaseUrl?: string;
   supabaseKey?: string;
@@ -95,9 +95,9 @@ import { useEffect } from 'react';
 
 interface LexFlowWidgetProps {
   botId: string;
-  metadata?: Record<string, any>;
+  metadata: Record<string, any>;
+  webhookUrl: string;
   sessionId?: string;
-  webhookUrl?: string;
 }
 
 const LexFlowWidget = ({ botId, metadata, sessionId, webhookUrl }: LexFlowWidgetProps) => {
