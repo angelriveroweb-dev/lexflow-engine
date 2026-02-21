@@ -147,5 +147,13 @@ Al usar el CDN en un proyecto Vite, a veces los imports de CSS vía URL pueden f
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/angelriveroweb-dev/lexflow-engine@main/dist/lexflow.css">
 ```
 
+## 🔐 Seguridad y RLS (Row Level Security)
+
+Es totalmente seguro usar este repositorio como **Público** y exponer la `anon_key` de Supabase, ya que hemos implementado políticas de **RLS** estrictas:
+
+*   **Configuraciones (`lexflow_configs`)**: Solo permite acceso de lectura (`SELECT`) a través del rol público. Nadie puede editar o borrar configuraciones desde el cliente.
+*   **Leads y Mensajes**: Están protegidos. Aunque alguien tenga tu URL de Supabase, no podrá leer los mensajes de otros usuarios ni extraer la lista de leads, ya que estas tablas requieren autenticación de administrador o están bloqueadas para lectura pública.
+*   **Insertar Datos**: Solo se permite la inserción de eventos de analítica y feedback de forma anónima para que el motor funcione, pero nunca la lectura masiva de estos datos.
+
 ---
 Desarrollado con ❤️ para Escobar & Asociados.
