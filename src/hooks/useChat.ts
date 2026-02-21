@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Message } from '../types';
 import type { LexFlowConfig } from '../core/ConfigLoader';
+import { getVisitorId } from '../lib/utils';
 
 export interface UseChatProps {
+
     config: LexFlowConfig;
     metadata?: Record<string, any>;
     externalSessionId?: string;
@@ -80,9 +82,10 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         try {
             const formData = new FormData();
 
-            // ALWAYS read visitorId directly from localStorage (source of truth)
+            // ALWAYS read visitorId directly from localStorage via utility (standardized)
             const effectiveClientId = metadata?.clientId || config.id;
-            const effectiveVisitorId = localStorage.getItem('visitor_id') || '';
+            const effectiveVisitorId = getVisitorId();
+
 
             formData.append('sessionId', sessionId);
             formData.append('text', text);

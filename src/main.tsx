@@ -55,31 +55,49 @@ const init = async (options: LexFlowOptions) => {
   const supabaseKey = options.supabaseKey || (import.meta as any).env.VITE_SUPABASE_ANON_KEY || '';
 
   // Track session_start if it's new
-  if (isNewSession && supabaseUrl && supabaseKey) {
+  if (supabaseUrl && supabaseKey) {
     try {
       const supabase = createSupabaseClient(supabaseUrl, supabaseKey);
-      supabase.from('analytics_events').insert({
-        event_type: 'session_start',
+
+      const basePayload = {
         visitor_id: visitorId,
         page_path: window.location.pathname,
+        client_id: options.id,
         metadata: {
-          ...options.metadata,  // Landing metadata FIRST (so engine fields override it)
+          ...options.metadata,
           sessionId,
-          visitorId,            // Engine's visitorId ALWAYS wins
+          visitorId,
           clientId: options.id,
           userAgent: navigator.userAgent,
           url: window.location.href,
           referrer: document.referrer || 'none',
           origin: 'lexflow_engine'
-        },
-        client_id: options.id
+        }
+      };
+
+      // 1. Session Start (Conditional)
+      if (isNewSession) {
+        supabase.from('analytics_events').insert({
+          ...basePayload,
+          event_type: 'session_start',
+        }).then(({ error }) => {
+          if (error) console.error('LexFlow: Session tracking error', error);
+        });
+      }
+
+      // 2. Page View (Mandatory on every init)
+      supabase.from('analytics_events').insert({
+        ...basePayload,
+        event_type: 'page_view',
       }).then(({ error }) => {
-        if (error) console.error('LexFlow: Tracking error', error);
+        if (error) console.error('LexFlow: Page tracking error', error);
       });
+
     } catch (e) {
       console.error('LexFlow: Analytics failed', e);
     }
   }
+
 
   const loader = new ConfigLoader(supabaseUrl, supabaseKey);
   const config = await loader.fetchConfig(options.id);
