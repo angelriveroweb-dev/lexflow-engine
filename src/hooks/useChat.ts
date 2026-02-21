@@ -80,14 +80,19 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
 
         try {
             const formData = new FormData();
+            
+            // Extract IDs from metadata if provided to allow overrides
+            const effectiveClientId = metadata?.clientId || config.id;
+            const effectiveVisitorId = metadata?.visitorId || getVisitorId();
+            
             formData.append('sessionId', sessionId);
             formData.append('text', text);
-            formData.append('clientId', config.id);
-            formData.append('visitorId', getVisitorId());
+            formData.append('clientId', effectiveClientId);
+            formData.append('visitorId', effectiveVisitorId);
 
             formData.append('metadata', JSON.stringify({
-                clientId: config.id,
-                visitorId: getVisitorId(),
+                clientId: effectiveClientId,
+                visitorId: effectiveVisitorId,
                 url: typeof window !== 'undefined' ? window.location.href : '',
                 timestamp: new Date().toISOString(),
                 ...metadata // Spread custom metadata

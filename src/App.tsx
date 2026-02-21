@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, MessageCircle, Trash2, ArrowLeft, Bot } from 'lucide-react'
 import { useChat } from './hooks/useChat'
+import { getVisitorId } from './lib/utils'
 import { ChatWindow } from './components/chat/ChatWindow'
 import { ChatInput } from './components/chat/ChatInput'
 import type { LexFlowConfig } from './core/ConfigLoader'
@@ -47,12 +48,22 @@ function App({ config, metadata, externalSessionId }: {
       // Abandonment / Activity Sync
       const handleVisibilityChange = () => {
         if (document.visibilityState === 'hidden' && sessionId) {
+          const effectiveClientId = metadata?.clientId || config.id;
+          const effectiveVisitorId = metadata?.visitorId || getVisitorId();
+
           const data = {
             sessionId: sessionId,
-            clientId: config.id,
+            text: '[User left page]',
+            clientId: effectiveClientId,
+            visitorId: effectiveVisitorId,
             action: 'user_abandoned_page',
-            timestamp: new Date().toISOString(),
-            metadata: metadata
+            metadata: JSON.stringify({
+              clientId: effectiveClientId,
+              visitorId: effectiveVisitorId,
+              url: window.location.href,
+              timestamp: new Date().toISOString(),
+              ...metadata
+            })
           };
 
           if (navigator.sendBeacon) {

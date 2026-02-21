@@ -30,11 +30,11 @@ Carga el JS y llama al método `init`:
 
 | Parámetro | Tipo | Requerido | Descripción |
 | :--- | :--- | :---: | :--- |
-| `id` | `string` | Sí | EL ID único del bot (ej: `demo` o ID de Supabase). |
-| `metadata` | `object` | Sí | Objeto con datos extra (UTMs, usuario logueado, etc) que se envían al webhook. |
-| `webhookUrl` | `string` | Sí | URL del webhook para procesar mensajes. Inyectado como prioridad sobre Supabase. |
-| `sessionId` | `string` | No | Fuerza un ID de sesión externo. Si no se provee, se genera uno persistente. |
-| `container` | `HTMLElement` | No | Elemento donde se renderizará el chat. Por defecto crea uno en el `body`. |
+| `id` | `string` | Sí | EL ID único del bot (ej: `demo`). |
+| `metadata` | `object` | Sí | Objeto con datos extra. **Importante:** Incluye `clientId` y `visitorId` aquí si quieres que coincidan con tu sistema externo. |
+| `webhookUrl` | `string` | Sí | URL del webhook de n8n. |
+| `sessionId` | `string` | Sí | ID de sesión externo. Si no se provee, se genera uno persistente. |
+| `container` | `HTMLElement` | No | Elemento para renderizar el chat. |
 
 ---
 
@@ -72,12 +72,13 @@ Crea o añade a tu archivo de tipos (ej: `types.d.ts` o `globals.d.ts`):
 ```typescript
 interface LexFlowOptions {
   id: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, any> & {
+    clientId?: string;
+    visitorId?: string;
+  };
   webhookUrl: string;
   sessionId?: string;
   container?: HTMLElement;
-  supabaseUrl?: string;
-  supabaseKey?: string;
 }
 
 interface Window {
@@ -102,7 +103,6 @@ interface LexFlowWidgetProps {
 
 const LexFlowWidget = ({ botId, metadata, sessionId, webhookUrl }: LexFlowWidgetProps) => {
   useEffect(() => {
-    // 1. Cargar el script asíncronamente
     const script = document.createElement('script');
     script.src = "https://cdn.jsdelivr.net/gh/angelriveroweb-dev/lexflow-engine@main/dist/lexflow.iife.js";
     script.async = true;
@@ -111,7 +111,7 @@ const LexFlowWidget = ({ botId, metadata, sessionId, webhookUrl }: LexFlowWidget
       if (window.LexFlow) {
         window.LexFlow.init({ 
           id: botId,
-          metadata,
+          metadata, // Pasa aquí el clientId y visitorId de tu landing
           sessionId,
           webhookUrl 
         });
@@ -121,12 +121,11 @@ const LexFlowWidget = ({ botId, metadata, sessionId, webhookUrl }: LexFlowWidget
     document.body.appendChild(script);
 
     return () => {
-      // Limpieza (opcional)
       document.body.removeChild(script);
     };
   }, [botId, metadata, sessionId]);
 
-  return null; // El widget se inyecta por fuera del árbol normal de React
+  return null;
 };
 
 export default LexFlowWidget;
@@ -136,21 +135,21 @@ export default LexFlowWidget;
 
 ## 🚀 ¿Qué recibe el Webhook?
 
-Cuando el usuario interactúa, tu webhook recibirá los metadatos inyectados dentro del campo `metadata`. Esto es ideal para rastrear el origen de los leads:
+El motor envía un `POST` con formato `multipart/form-data`. La estructura del body es la siguiente:
 
 ```json
 {
-  "text": "mensaje del usuario",
-  "sessionId": "...",
-  "clientId": "...",
-  "metadata": {
-    "source": "facebook_ads",
-    "campaign": "invierno_2024",
-    "url": "https://tusitio.com/?utm_source=...",
-    "timestamp": "2024-02-21T..."
-  }
+  "sessionId": "c0f76658-6f4c-4f34",
+  "text": "Consultar Precio",
+  "clientId": "30727c70-d179-4f1d",
+  "visitorId": "1b66d202-5396-45c1",
+  "action": "user_message", // O 'user_abandoned_page', 'file_upload'
+  "metadata": "{\"clientId\":\"...\", \"visitorId\":\"...\", \"url\":\"...\", \"timestamp\":\"...\"}"
 }
 ```
+
+> **Nota:** El campo `metadata` se envía como un **String JSON** para asegurar la compatibilidad con flujos de n8n que esperan ese formato específico. Los campos `clientId` y `visitorId` dentro de `metadata` se sincronizan automáticamente con lo que pases en el `init`.
+
 
 ### 3. Agregar el CSS en `main.tsx` o `index.html`
 Importa el estilo globalmente:

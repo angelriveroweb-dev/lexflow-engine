@@ -11,8 +11,8 @@ interface LexFlowOptions {
   supabaseUrl?: string;
   supabaseKey?: string;
   metadata?: Record<string, any>;
-  sessionId?: string;
   webhookUrl?: string;
+  sessionId?: string;
 }
 
 const init = async (options: LexFlowOptions) => {
