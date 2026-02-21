@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Message } from '../types';
 import type { LexFlowConfig } from '../core/ConfigLoader';
-import { getVisitorId } from '../lib/utils';
+import { getVisitorId, generateUUID } from '../lib/utils';
 
 export interface UseChatProps {
 
@@ -25,7 +25,7 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         const stored = localStorage.getItem(`lexflow_session_id_${config.id}`);
         if (stored) return stored;
 
-        const newId = crypto.randomUUID();
+        const newId = generateUUID();
         localStorage.setItem(`lexflow_session_id_${config.id}`, newId);
         return newId;
     });
@@ -64,7 +64,7 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         if ((!text.trim() && !file)) return;
 
         const userMsg: Message = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             text,
             sender: 'user',
             timestamp: new Date(),
@@ -147,7 +147,7 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
             }
 
             const botMsg: Message = {
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 text: botText,
                 sender: 'bot',
                 timestamp: new Date(),
@@ -163,7 +163,7 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         } catch (error) {
             console.error('LexFlow: Chat Error:', error);
             setMessages(prev => [...prev, {
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 text: "Lo siento, hubo un problema de conexión. Por favor, intenta de nuevo.",
                 sender: 'bot',
                 timestamp: new Date()

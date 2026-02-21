@@ -4,7 +4,7 @@ import App from './App'
 import './index.css'
 import { ConfigLoader } from './core/ConfigLoader'
 import type { LexFlowConfig } from './core/ConfigLoader'
-import { getVisitorId } from './lib/utils'
+import { getVisitorId, generateUUID } from './lib/utils'
 import { createSupabaseClient } from './lib/supabase'
 
 interface LexFlowOptions {
@@ -45,7 +45,7 @@ const init = async (options: LexFlowOptions) => {
   const isNewSession = !sessionId || !lastActivity || (now - parseInt(lastActivity)) > SESSION_TIMEOUT;
 
   if (isNewSession) {
-    sessionId = window.crypto.randomUUID();
+    sessionId = generateUUID();
     localStorage.setItem('visitor_session_id', sessionId!);
   }
   localStorage.setItem('last_activity', now.toString());
