@@ -10,6 +10,8 @@ interface LexFlowOptions {
   container?: HTMLElement;
   supabaseUrl?: string;
   supabaseKey?: string;
+  metadata?: Record<string, any>;
+  sessionId?: string;
 }
 
 const init = async (options: LexFlowOptions) => {
@@ -34,7 +36,11 @@ const init = async (options: LexFlowOptions) => {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
-      <App config={config} />
+      <App
+        config={config}
+        metadata={options.metadata || {}}
+        externalSessionId={options.sessionId}
+      />
     </React.StrictMode>
   );
 }

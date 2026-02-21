@@ -6,9 +6,17 @@ import { ChatWindow } from './components/chat/ChatWindow'
 import { ChatInput } from './components/chat/ChatInput'
 import type { LexFlowConfig } from './core/ConfigLoader'
 
-function App({ config }: { config: LexFlowConfig }) {
+function App({ config, metadata, externalSessionId }: {
+  config: LexFlowConfig,
+  metadata?: Record<string, any>,
+  externalSessionId?: string
+}) {
   const [isOpen, setIsOpen] = useState(false)
-  const { messages, isLoading, isAnalyzing, sendMessage, sessionId, clearHistory } = useChat({ config })
+  const { messages, isLoading, isAnalyzing, sendMessage, sessionId, clearHistory } = useChat({
+    config,
+    metadata,
+    externalSessionId
+  })
   const [hookIndex, setHookIndex] = useState(0)
 
   const launcherMessages = config.ui.launcherMessages || [

@@ -5,9 +5,11 @@ import { getVisitorId } from '../lib/utils';
 
 export interface UseChatProps {
     config: LexFlowConfig;
+    metadata?: Record<string, any>;
+    externalSessionId?: string;
 }
 
-export const useChat = ({ config }: UseChatProps) => {
+export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -15,8 +17,13 @@ export const useChat = ({ config }: UseChatProps) => {
     // Persistent Session ID
     const [sessionId] = useState(() => {
         if (typeof window === 'undefined') return '';
+
+        // Priority for external session ID
+        if (externalSessionId) return externalSessionId;
+
         const stored = localStorage.getItem(`lexflow_session_id_${config.id}`);
         if (stored) return stored;
+
         const newId = crypto.randomUUID();
         localStorage.setItem(`lexflow_session_id_${config.id}`, newId);
         return newId;
@@ -82,7 +89,8 @@ export const useChat = ({ config }: UseChatProps) => {
                 clientId: config.id,
                 visitorId: getVisitorId(),
                 url: typeof window !== 'undefined' ? window.location.href : '',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                ...metadata // Spread custom metadata
             }));
 
             if (file) {

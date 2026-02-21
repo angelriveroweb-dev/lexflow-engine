@@ -31,9 +31,9 @@ Carga el JS y llama al método `init`:
 | Parámetro | Tipo | Requerido | Descripción |
 | :--- | :--- | :---: | :--- |
 | `id` | `string` | Sí | EL ID único del bot (ej: `demo` o ID de Supabase). |
+| `metadata` | `object` | No | Objeto con datos extra (UTMs, usuario logueado, etc) que se envían al webhook. |
+| `sessionId` | `string` | No | Fuerza un ID de sesión externo. Si no se provee, se genera uno persistente. |
 | `container` | `HTMLElement` | No | Elemento donde se renderizará el chat. Por defecto crea uno en el `body`. |
-| `supabaseUrl` | `string` | No | URL de tu instancia de Supabase (si no está embebida). |
-| `supabaseKey` | `string` | No | Anon Key de tu Supabase (si no está embebida). |
 
 ---
 
@@ -71,6 +71,8 @@ Crea o añade a tu archivo de tipos (ej: `types.d.ts` o `globals.d.ts`):
 ```typescript
 interface LexFlowOptions {
   id: string;
+  metadata?: Record<string, any>;
+  sessionId?: string;
   container?: HTMLElement;
   supabaseUrl?: string;
   supabaseKey?: string;
@@ -91,9 +93,11 @@ import { useEffect } from 'react';
 
 interface LexFlowWidgetProps {
   botId: string;
+  metadata?: Record<string, any>;
+  sessionId?: string;
 }
 
-const LexFlowWidget = ({ botId }: LexFlowWidgetProps) => {
+const LexFlowWidget = ({ botId, metadata, sessionId }: LexFlowWidgetProps) => {
   useEffect(() => {
     // 1. Cargar el script asíncronamente
     const script = document.createElement('script');
@@ -102,7 +106,11 @@ const LexFlowWidget = ({ botId }: LexFlowWidgetProps) => {
 
     script.onload = () => {
       if (window.LexFlow) {
-        window.LexFlow.init({ id: botId });
+        window.LexFlow.init({ 
+          id: botId,
+          metadata,
+          sessionId 
+        });
       }
     };
 
@@ -112,12 +120,32 @@ const LexFlowWidget = ({ botId }: LexFlowWidgetProps) => {
       // Limpieza (opcional)
       document.body.removeChild(script);
     };
-  }, [botId]);
+  }, [botId, metadata, sessionId]);
 
   return null; // El widget se inyecta por fuera del árbol normal de React
 };
 
 export default LexFlowWidget;
+```
+
+---
+
+## 🚀 ¿Qué recibe el Webhook?
+
+Cuando el usuario interactúa, tu webhook recibirá los metadatos inyectados dentro del campo `metadata`. Esto es ideal para rastrear el origen de los leads:
+
+```json
+{
+  "text": "mensaje del usuario",
+  "sessionId": "...",
+  "clientId": "...",
+  "metadata": {
+    "source": "facebook_ads",
+    "campaign": "invierno_2024",
+    "url": "https://tusitio.com/?utm_source=...",
+    "timestamp": "2024-02-21T..."
+  }
+}
 ```
 
 ### 3. Agregar el CSS en `main.tsx` o `index.html`
@@ -156,4 +184,4 @@ Es totalmente seguro usar este repositorio como **Público** y exponer la `anon_
 *   **Insertar Datos**: Solo se permite la inserción de eventos de analítica y feedback de forma anónima para que el motor funcione, pero nunca la lectura masiva de estos datos.
 
 ---
-Desarrollado con ❤️ para Escobar & Asociados.
+
