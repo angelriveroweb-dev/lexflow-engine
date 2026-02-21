@@ -48,7 +48,7 @@ function App({ config, metadata, externalSessionId }: {
       const handleVisibilityChange = () => {
         if (document.visibilityState === 'hidden' && sessionId) {
           const effectiveClientId = metadata?.clientId || config.id;
-          const effectiveVisitorId = metadata?.visitorId || '';
+          const effectiveVisitorId = localStorage.getItem('visitor_id') || '';
 
           const data = {
             sessionId: sessionId,

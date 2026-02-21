@@ -63,14 +63,14 @@ const init = async (options: LexFlowOptions) => {
         visitor_id: visitorId,
         page_path: window.location.pathname,
         metadata: {
+          ...options.metadata,  // Landing metadata FIRST (so engine fields override it)
           sessionId,
-          visitorId,
+          visitorId,            // Engine's visitorId ALWAYS wins
           clientId: options.id,
           userAgent: navigator.userAgent,
           url: window.location.href,
           referrer: document.referrer || 'none',
-          origin: 'lexflow_engine',
-          ...options.metadata // Merging landing page metadata (like demoUser)
+          origin: 'lexflow_engine'
         },
         client_id: options.id
       }).then(({ error }) => {

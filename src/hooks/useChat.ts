@@ -80,9 +80,9 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         try {
             const formData = new FormData();
 
-            // Extract IDs from metadata if provided to allow overrides
+            // ALWAYS read visitorId directly from localStorage (source of truth)
             const effectiveClientId = metadata?.clientId || config.id;
-            const effectiveVisitorId = metadata?.visitorId || '';
+            const effectiveVisitorId = localStorage.getItem('visitor_id') || '';
 
             formData.append('sessionId', sessionId);
             formData.append('text', text);
@@ -92,6 +92,7 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
             formData.append('metadata', JSON.stringify({
                 clientId: effectiveClientId,
                 visitorId: effectiveVisitorId,
+                sessionId: sessionId,
                 url: typeof window !== 'undefined' ? window.location.href : '',
                 timestamp: new Date().toISOString(),
                 ...metadata // Spread custom metadata
