@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Message } from '../types';
 import type { LexFlowConfig } from '../core/ConfigLoader';
-import { getVisitorId } from '../lib/utils';
 
 export interface UseChatProps {
     config: LexFlowConfig;
@@ -80,11 +79,11 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
 
         try {
             const formData = new FormData();
-            
+
             // Extract IDs from metadata if provided to allow overrides
             const effectiveClientId = metadata?.clientId || config.id;
-            const effectiveVisitorId = metadata?.visitorId || getVisitorId();
-            
+            const effectiveVisitorId = metadata?.visitorId || '';
+
             formData.append('sessionId', sessionId);
             formData.append('text', text);
             formData.append('clientId', effectiveClientId);
@@ -169,11 +168,11 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
             setIsLoading(false);
             setIsAnalyzing(false);
         }
-    }, [sessionId, config]);
+    }, [sessionId, config, metadata]);
 
     const clearHistory = () => {
         localStorage.removeItem(`lexflow_history_${sessionId}`);
-        localStorage.removeItem(`lexflow_session_id_${config.id}`);
+        localStorage.removeItem('visitor_session_id');
         setMessages([{
             id: 'welcome-reset',
             text: config.messages.welcome,

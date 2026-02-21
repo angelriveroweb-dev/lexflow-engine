@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, MessageCircle, Trash2, ArrowLeft, Bot } from 'lucide-react'
 import { useChat } from './hooks/useChat'
-import { getVisitorId } from './lib/utils'
 import { ChatWindow } from './components/chat/ChatWindow'
 import { ChatInput } from './components/chat/ChatInput'
 import type { LexFlowConfig } from './core/ConfigLoader'
@@ -49,7 +48,7 @@ function App({ config, metadata, externalSessionId }: {
       const handleVisibilityChange = () => {
         if (document.visibilityState === 'hidden' && sessionId) {
           const effectiveClientId = metadata?.clientId || config.id;
-          const effectiveVisitorId = metadata?.visitorId || getVisitorId();
+          const effectiveVisitorId = metadata?.visitorId || '';
 
           const data = {
             sessionId: sessionId,
