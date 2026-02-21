@@ -1,0 +1,308 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "chat",
+                "responseMode": "responseNode",
+                "options": {
+                    "allowedOrigins": "*"
+                }
+            },
+            "id": "webhook-chat",
+            "name": "chat",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1.1,
+            "position": [
+                2000,
+                2700
+            ],
+            "webhookId": "187f7214-634a-4ba4-ae42-f1518eb50fa2"
+        },
+        {
+            "parameters": {
+                "jsCode": "const body = $json.body || {};\nconst metadata = body.metadata ? (typeof body.metadata === 'string' ? JSON.parse(body.metadata) : body.metadata) : {};\n\n// Detectar el nombre de la propiedad binaria (usualmente 'file' o 'data')\nconst binaryKeys = Object.keys($binary || {});\nconst mainBinaryKey = binaryKeys.length > 0 ? binaryKeys[0] : null;\n\nreturn {\n  json: {\n    sessionId: body.sessionId || body.clientId || 'default-session',\n    clientId: metadata.clientId || body.clientId || '30727c70-d179-4f1d-ab7b-61d5275c1f31',\n    chatInput: body.text || body.message || 'Analizar archivo adjunto',\n    visitorId: metadata.visitorId || body.visitorId,\n    hasFile: !!mainBinaryKey,\n    binaryKey: mainBinaryKey\n  }\n};"
+            },
+            "id": "preparar-datos",
+            "name": "Preparar Datos",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                2220,
+                2700
+            ]
+        },
+        {
+            "parameters": {
+                "options": {
+                    "systemMessage": "=Eres el **ESPECIALISTA EN ANÁLISIS DOCUMENTAL** de Escobar & Asociados.\n\n### 🎯 TU MISIÓN:\nRecibirás un documento (PDF o Imagen). Tu trabajo es extraer CADA detalle relevante:\n- **Si es una MULTA**: Fecha, Hora, Lugar, Monto, Infracción específica, Ente Emisor.\n- **Si es un CONTRATO**: Fecha, Partes, Cláusulas de Terminación, Montos, Plazos.\n- **Si es una NOTIFICACIÓN**: Plazo fatal para responder, Juzgado, Expediente.\n\n### 📦 SALIDA:\nDevuelve un resumen técnico claro y una recomendación para el Abogado Senior.\n\nIMPORTANTE: Tu respuesta será usada como CONTEXTO por el Agente Orquestador. Sé preciso."
+                }
+            },
+            "id": "agente-especialista",
+            "name": "Especialista Multimodal",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1.6,
+            "position": [
+                2500,
+                2400
+            ]
+        },
+        {
+            "parameters": {
+                "options": {
+                    "systemMessage": "=Eres el **ABOGADO SENIOR ORQUESTADOR** de Escobar & Asociados.\n\n### 🧠 CONTEXTO ACTUAL:\n{{ $node[\"Especialista Multimodal\"].json.output ? \"EL ESPECIALISTA ANALIZÓ UN ARCHIVO: \" + $node[\"Especialista Multimodal\"].json.output : \"Conversación de chat estándar.\" }}\n\n### 🛡️ TUS PRIORIDADES:\n1. Si el especialista analizó un archivo, explica al usuario qué significa esto legalmente y cómo podemos ayudarle.\n2. Usa `knowledge_base` para validar si el despacho atiende este tipo de casos.\n3. Si el caso es viable, busca capturar Nombre/WhatsApp y ofrece `agendar_cita`.\n4. Si el usuario cambia de tema, responde fluidamente usando la `knowledge_base`.\n\n### 📦 FORMATO JSON OBLIGATORIO:\n{\n  \"text\": \"...\",\n  \"suggestions\": [\"...\"],\n  \"action\": \"null | schedule_appointment | show_payment_gateway\"\n}"
+                }
+            },
+            "id": "agente-orquestador",
+            "name": "Orquestador Final",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1.6,
+            "position": [
+                2800,
+                2700
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 3
+                    },
+                    "conditions": [
+                        {
+                            "id": "contiene-archivo",
+                            "leftValue": "={{ $json.hasFile }}",
+                            "rightValue": true,
+                            "operator": {
+                                "type": "boolean",
+                                "operation": "equal"
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "id": "tiene-archivo-if",
+            "name": "¿Tiene Archivo?",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.3,
+            "position": [
+                2400,
+                2700
+            ]
+        },
+        {
+            "parameters": {
+                "projectId": {
+                    "__rl": true,
+                    "value": "gen-lang-client-0468317049",
+                    "mode": "list",
+                    "cachedResultName": "PRO GEMINI"
+                },
+                "options": {
+                    "temperature": 0.1
+                },
+                "inputs": {
+                    "input": [
+                        {
+                            "type": "binary",
+                            "property": "={{ $('Preparar Datos').item.json.binaryKey }}"
+                        }
+                    ]
+                }
+            },
+            "id": "model-gemini-vision",
+            "name": "Gemini 2.0 Flash (Vision)",
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+            "typeVersion": 1,
+            "position": [
+                2350,
+                2200
+            ],
+            "credentials": {
+                "googleApi": {
+                    "id": "HGKnkFRmPySzScPs",
+                    "name": "open code"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "projectId": {
+                    "__rl": true,
+                    "value": "gen-lang-client-0468317049",
+                    "mode": "list",
+                    "cachedResultName": "PRO GEMINI"
+                }
+            },
+            "id": "model-gemini-standard",
+            "name": "Gemini 2.0 Flash (Std)",
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+            "typeVersion": 1,
+            "position": [
+                2650,
+                2920
+            ],
+            "credentials": {
+                "googleApi": {
+                    "id": "HGKnkFRmPySzScPs",
+                    "name": "open code"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "name": "knowledge_base",
+                "description": "Información oficial del despacho y servicios.",
+                "topK": 5
+            },
+            "id": "tool-kb",
+            "name": "knowledge_base",
+            "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+            "typeVersion": 1,
+            "position": [
+                2950,
+                2920
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Limpieza de JSON para el Frontend\ntry {\n  let raw = $json.output || \"\";\n  if (typeof raw === 'object') return raw;\n  let clean = raw.trim();\n  if (clean.includes('```json')) {\n      const match = clean.match(/```json\\\\s*([\\\\s\\\\S]*?)\\\\s*```/);\n      if (match) clean = match[1].trim();\n  }\n  if (clean.startsWith('{')) return JSON.parse(clean);\n  return { text: raw, suggestions: ['Agendar Cita'], action: null };\n} catch (e) {\n  return { text: String($json.output), suggestions: [], action: null };\n}"
+            },
+            "id": "final-format",
+            "name": "Formatear Respuesta",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                3100,
+                2700
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ $json }}"
+            },
+            "id": "respond",
+            "name": "Responder",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                3300,
+                2700
+            ]
+        }
+    ],
+    "connections": {
+        "chat": {
+            "main": [
+                [
+                    {
+                        "node": "Preparar Datos",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Preparar Datos": {
+            "main": [
+                [
+                    {
+                        "node": "¿Tiene Archivo?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "¿Tiene Archivo?": {
+            "main": [
+                [
+                    {
+                        "node": "Especialista Multimodal",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Orquestador Final",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Especialista Multimodal": {
+            "main": [
+                [
+                    {
+                        "node": "Orquestador Final",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Orquestador Final": {
+            "main": [
+                [
+                    {
+                        "node": "Formatear Respuesta",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "model-gemini-vision": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Especialista Multimodal",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "model-gemini-standard": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Orquestador Final",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "knowledge_base": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "Orquestador Final",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Formatear Respuesta": {
+            "main": [
+                [
+                    {
+                        "node": "Responder",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

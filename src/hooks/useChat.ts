@@ -24,6 +24,7 @@ export interface UseChatProps {
 export const useChat = ({ clientId }: UseChatProps) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
     // Persistent Session ID (Simple)
@@ -78,7 +79,12 @@ export const useChat = ({ clientId }: UseChatProps) => {
         };
 
         setMessages(prev => [...prev, userMsg]);
-        setIsLoading(true);
+
+        if (file) {
+            setIsAnalyzing(true);
+        } else {
+            setIsLoading(true);
+        }
 
         try {
             const formData = new FormData();
@@ -174,6 +180,7 @@ export const useChat = ({ clientId }: UseChatProps) => {
             }]);
         } finally {
             setIsLoading(false);
+            setIsAnalyzing(false);
         }
     }, [sessionId, clientId]);
 
@@ -193,6 +200,7 @@ export const useChat = ({ clientId }: UseChatProps) => {
     return {
         messages,
         isLoading,
+        isAnalyzing,
         sendMessage,
         clearHistory,
         isOpen,

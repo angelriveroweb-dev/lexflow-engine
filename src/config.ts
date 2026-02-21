@@ -46,8 +46,8 @@ export const config = {
             negativeIntentKeywords: ['no me sirve', 'inútil', 'basura', 'humano', 'persona']
         },
         // Hybrid AI Agent Webhook (n8n)
-        n8nWebhook: "https://n8n.angelstudio.design/webhook/chat",
-        webhookUrl: "https://n8n.angelstudio.design/webhook/chat",
+        n8nWebhook: "https://n8n.angelstudio.design/webhook/616e01d1-ca82-45e1-8ef1-be996160ea42",
+        webhookUrl: "https://n8n.angelstudio.design/webhook/616e01d1-ca82-45e1-8ef1-be996160ea42",
     },
 
     // Dynamic Content (Architecture of Persuasion)

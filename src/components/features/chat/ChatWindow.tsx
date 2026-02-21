@@ -9,11 +9,12 @@ import { CalendarBooking } from './CalendarBooking';
 interface ChatWindowProps {
     messages: Message[];
     isLoading: boolean;
+    isAnalyzing?: boolean;
     onSend?: (text: string, file?: File) => void;
     sessionId: string;
 }
 
-export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, onSend, sessionId }) => {
+export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, isAnalyzing, onSend, sessionId }) => {
     const bottomRef = useRef<HTMLDivElement>(null);
     const { speak, isSpeaking, stopSpeaking } = useSpeech();
     const { ui } = config.chatbot;
@@ -260,6 +261,59 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, onS
                         <div className="w-1.5 h-1.5 bg-[#C6A87C]/30 rounded-full animate-bounce"></div>
                     </div>
                 </div>
+            )}
+
+            {isAnalyzing && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="absolute inset-x-4 bottom-24 z-20 bg-zinc-900/90 backdrop-blur-xl border border-[#C6A87C]/30 p-6 rounded-2xl shadow-[0_0_50px_rgba(198,168,124,0.2)]"
+                >
+                    <div className="flex flex-col items-center text-center space-y-4">
+                        <div className="relative w-16 h-16">
+                            <motion.div
+                                animate={{
+                                    rotate: 360,
+                                    borderTopColor: ['#C6A87C', '#fff', '#C6A87C']
+                                }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                className="absolute inset-0 rounded-full border-4 border-white/5 border-t-[#C6A87C]"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Bot size={24} className="text-[#C6A87C] animate-pulse" />
+                            </div>
+
+                            {/* Scanning beam animation */}
+                            <motion.div
+                                animate={{
+                                    top: ['0%', '100%', '0%'],
+                                    opacity: [0, 1, 0]
+                                }}
+                                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                                className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#C6A87C] to-transparent shadow-[0_0_8px_#C6A87C]"
+                            />
+                        </div>
+
+                        <div>
+                            <h4 className="text-white font-bold text-lg">Analizando Documento...</h4>
+                            <p className="text-zinc-400 text-sm mt-1">Escaneando validez y datos legales con Gemini IA</p>
+                        </div>
+
+                        {/* Progress pips */}
+                        <div className="flex gap-1">
+                            {[0, 1, 2, 3].map((i) => (
+                                <motion.div
+                                    key={i}
+                                    animate={{
+                                        backgroundColor: ['rgba(198, 168, 124, 0.1)', 'rgba(198, 168, 124, 1)', 'rgba(198, 168, 124, 0.1)']
+                                    }}
+                                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                                    className="w-8 h-1 rounded-full"
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </motion.div>
             )}
 
             <div ref={bottomRef} />

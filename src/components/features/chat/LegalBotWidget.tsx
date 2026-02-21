@@ -18,7 +18,7 @@ const HOOK_MESSAGES = [
 ];
 
 export const LegalBotWidget: React.FC<LegalBotWidgetProps> = ({ clientId }) => {
-    const { messages, isLoading, sendMessage, isOpen, setIsOpen, clearHistory, sessionId } = useChat({ clientId });
+    const { messages, isLoading, isAnalyzing, sendMessage, isOpen, setIsOpen, clearHistory, sessionId } = useChat({ clientId });
     const { ui } = config.chatbot;
 
     const [hookIndex, setHookIndex] = useState(0);
@@ -191,12 +191,12 @@ export const LegalBotWidget: React.FC<LegalBotWidgetProps> = ({ clientId }) => {
 
                         {/* Body - Custom Chat Components */}
                         <div className="flex-1 overflow-hidden relative flex flex-col">
-                            <ChatWindow messages={messages} isLoading={isLoading} onSend={sendMessage} sessionId={sessionId} />
+                            <ChatWindow messages={messages} isLoading={isLoading} isAnalyzing={isAnalyzing} onSend={sendMessage} sessionId={sessionId} />
                         </div>
 
                         {/* Chat Input and Branding */}
                         <div className="p-4 bg-white/5 backdrop-blur-md border-t border-white/5">
-                            <ChatInput onSend={sendMessage} isLoading={isLoading} />
+                            <ChatInput onSend={sendMessage} isLoading={isLoading || isAnalyzing} />
                             <div className="mt-4 flex items-center justify-center gap-2 opacity-40 hover:opacity-100 transition-opacity duration-500 cursor-default">
                                 <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-zinc-500"></div>
                                 <span className="text-[10px] text-zinc-400 font-medium tracking-[0.2em] uppercase">

@@ -1,0 +1,207 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "minutes",
+                            "minutesInterval": 30
+                        }
+                    ]
+                }
+            },
+            "id": "schedule-trigger",
+            "name": "Schedule Trigger",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                2000,
+                2700
+            ]
+        },
+        {
+            "parameters": {
+                "projectId": "csfmrrjklvawxxhddgek",
+                "query": "SELECT * FROM leads WHERE last_active < NOW() - INTERVAL '30 minutes' AND reminded = false AND (email IS NOT NULL OR whatsapp IS NOT NULL) LIMIT 20;"
+            },
+            "id": "query-inactive-leads",
+            "name": "Query Inactive Leads",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                2220,
+                2700
+            ],
+            "credentials": {
+                "supabaseApi": {
+                    "id": "gQ5A4mlgfIM82o30",
+                    "name": "legal service 1"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "dataType": "boolean",
+                "value1": "={{ !!$json.whatsapp }}",
+                "rules": {
+                    "rules": [
+                        {
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "check-method",
+            "name": "Check Contact Method",
+            "type": "n8n-nodes-base.switch",
+            "typeVersion": 1,
+            "position": [
+                2440,
+                2700
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.whatsapp.com/v1/messages",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer YOUR_WA_TOKEN"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "to",
+                            "value": "={{ $json.whatsapp }}"
+                        },
+                        {
+                            "name": "text",
+                            "value": "=Hola {{ $json.name }}, notamos que dejaste una consulta pendiente en Escobar & Asociados. ¿Te gustaría retomarla?"
+                        }
+                    ]
+                }
+            },
+            "id": "send-wa-reminder",
+            "name": "Send WhatsApp Reminder",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                2660,
+                2600
+            ]
+        },
+        {
+            "parameters": {
+                "fromEmail": "contacto@angelstudio.design",
+                "toEmail": "={{ $json.email }}",
+                "subject": "Continuemos con su consulta legal",
+                "html": "=<h3>Hola {{ $json.name }},</h3><p>Notamos que dejaste una consulta pendiente en nuestro chat. Estamos aquí para ayudarte con tu caso.</p><p><a href=\"https://legal-escobar.vercel.app\">Haz clic aquí para retomar la sesión</a></p>"
+            },
+            "id": "send-email-reminder",
+            "name": "Send Email Reminder",
+            "type": "n8n-nodes-base.emailSend",
+            "typeVersion": 2,
+            "position": [
+                2660,
+                2800
+            ]
+        },
+        {
+            "parameters": {
+                "projectId": "csfmrrjklvawxxhddgek",
+                "table": "leads",
+                "data": {
+                    "reminded": true
+                },
+                "match": {
+                    "id": "={{ $json.id }}"
+                }
+            },
+            "id": "update-reminded-status",
+            "name": "Update Reminded Status",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                2900,
+                2700
+            ],
+            "credentials": {
+                "supabaseApi": {
+                    "id": "gQ5A4mlgfIM82o30",
+                    "name": "legal service 1"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Schedule Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Query Inactive Leads",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Query Inactive Leads": {
+            "main": [
+                [
+                    {
+                        "node": "Check Contact Method",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Check Contact Method": {
+            "main": [
+                [
+                    {
+                        "node": "Send WhatsApp Reminder",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Send Email Reminder",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Send WhatsApp Reminder": {
+            "main": [
+                [
+                    {
+                        "node": "Update Reminded Status",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Send Email Reminder": {
+            "main": [
+                [
+                    {
+                        "node": "Update Reminded Status",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

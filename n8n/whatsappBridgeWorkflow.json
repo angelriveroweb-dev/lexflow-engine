@@ -1,0 +1,154 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "whatsapp-incoming",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "id": "webhook-wa",
+            "name": "WhatsApp Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1.1,
+            "position": [
+                2000,
+                2700
+            ],
+            "webhookId": "wa-bridge-webhook-id"
+        },
+        {
+            "parameters": {
+                "jsCode": "const body = $json.body || {};\nconst fromNumber = body.from || body.sender || body.waId;\nconst text = body.text || body.message || body.body;\n\nreturn {\n  json: {\n    text,\n    whatsappNumber: fromNumber,\n    action: \"user_message\"\n  }\n};"
+            },
+            "id": "parse-wa",
+            "name": "Parse WhatsApp",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                2220,
+                2700
+            ]
+        },
+        {
+            "parameters": {
+                "projectId": "csfmrrjklvawxxhddgek",
+                "query": "=SELECT id, client_id, name FROM leads WHERE whatsapp = '{{ $json.whatsappNumber }}' LIMIT 1;"
+            },
+            "id": "lookup-lead",
+            "name": "Lookup Lead",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                2440,
+                2700
+            ],
+            "credentials": {
+                "supabaseApi": {
+                    "id": "gQ5A4mlgfIM82o30",
+                    "name": "legal service 1"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://n8n.angelstudio.design/webhook/616e01d1-ca82-45e1-8ef1-be996160ea42",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "text",
+                            "value": "={{ $('Parse WhatsApp').item.json.text }}"
+                        },
+                        {
+                            "name": "clientId",
+                            "value": "={{ $json.client_id || 'whatsapp-client' }}"
+                        },
+                        {
+                            "name": "sessionId",
+                            "value": "={{ $json.id || 'wa-' + $('Parse WhatsApp').item.json.whatsappNumber }}"
+                        },
+                        {
+                            "name": "action",
+                            "value": "user_message"
+                        },
+                        {
+                            "name": "metadata",
+                            "value": "={{ JSON.stringify({ source: 'whatsapp', name: $json.name }) }}"
+                        }
+                    ]
+                }
+            },
+            "id": "forward-to-ai",
+            "name": "Forward to AI Agent",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                2660,
+                2700
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ $json }}",
+                "options": {}
+            },
+            "id": "respond-wa",
+            "name": "Respond to WhatsApp",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                2880,
+                2700
+            ]
+        }
+    ],
+    "connections": {
+        "WhatsApp Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Parse WhatsApp",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Parse WhatsApp": {
+            "main": [
+                [
+                    {
+                        "node": "Lookup Lead",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Lookup Lead": {
+            "main": [
+                [
+                    {
+                        "node": "Forward to AI Agent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Forward to AI Agent": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to WhatsApp",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}
