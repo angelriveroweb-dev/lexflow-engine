@@ -13,11 +13,12 @@ interface ChatWindowProps {
     isLoading: boolean;
     isAnalyzing?: boolean;
     onSend?: (text: string, file?: File) => void;
+    onAbort?: () => void;
     sessionId: string;
     config: LexFlowConfig;
 }
 
-export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, isAnalyzing, onSend, sessionId, config }) => {
+export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, isAnalyzing, onSend, onAbort, sessionId, config }) => {
     const bottomRef = useRef<HTMLDivElement>(null);
     const { speak, isSpeaking, stopSpeaking } = useSpeech();
     const { ui } = config;
@@ -161,6 +162,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, isA
                         <div>
                             <h4 className="text-white font-bold text-lg">Analizando Documento...</h4>
                             <p className="text-zinc-400 text-sm mt-1">Procesando información legal con IA</p>
+                            <button onClick={onAbort} className="mt-4 px-4 py-2 bg-red-500/10 text-red-500 border border-red-500/20 rounded-full text-xs font-semibold hover:bg-red-500/20 transition-colors">
+                                Cancelar
+                            </button>
                         </div>
                     </div>
                 </motion.div>

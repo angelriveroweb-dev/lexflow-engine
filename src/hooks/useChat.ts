@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Message } from '../types';
 import type { LexFlowConfig } from '../core/ConfigLoader';
 import { getVisitorId, generateUUID } from '../lib/utils';
@@ -60,6 +60,23 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         }
     }, [messages, sessionId]);
 
+    const abortControllerRef = useRef<AbortController | null>(null);
+
+    const abortRequest = useCallback(() => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+            setIsAnalyzing(false);
+            setIsLoading(false);
+            setMessages(prev => [...prev, {
+                id: generateUUID(),
+                text: "❌ La operación ha sido cancelada.",
+                sender: 'bot',
+                timestamp: new Date()
+            }]);
+        }
+    }, []);
+
     const sendMessage = useCallback(async (text: string, file?: File) => {
         if ((!text.trim() && !file)) return;
 
@@ -80,12 +97,12 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         }
 
         try {
+            abortControllerRef.current = new AbortController();
             const formData = new FormData();
 
             // ALWAYS read visitorId directly from localStorage via utility (standardized)
             const effectiveClientId = metadata?.clientId || config.id;
             const effectiveVisitorId = getVisitorId();
-
 
             formData.append('sessionId', sessionId);
             formData.append('text', text);
@@ -111,6 +128,7 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
             const response = await fetch(config.webhookUrl, {
                 method: 'POST',
                 body: formData,
+                signal: abortControllerRef.current.signal
             });
 
             if (!response.ok) throw new Error(`Webhook error: ${response.status}`);
@@ -160,7 +178,11 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
 
             setMessages(prev => [...prev, botMsg]);
 
-        } catch (error) {
+        } catch (error: any) {
+            if (error.name === 'AbortError') {
+                console.log('LexFlow: Request aborted by user');
+                return;
+            }
             console.error('LexFlow: Chat Error:', error);
             setMessages(prev => [...prev, {
                 id: generateUUID(),
@@ -171,6 +193,7 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         } finally {
             setIsLoading(false);
             setIsAnalyzing(false);
+            abortControllerRef.current = null;
         }
     }, [sessionId, config, metadata]);
 
@@ -193,6 +216,7 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         isAnalyzing,
         sendMessage,
         clearHistory,
-        sessionId
+        sessionId,
+        abortRequest
     };
 };

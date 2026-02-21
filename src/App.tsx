@@ -12,7 +12,7 @@ function App({ config, metadata, externalSessionId }: {
   externalSessionId?: string
 }) {
   const [isOpen, setIsOpen] = useState(false)
-  const { messages, isLoading, isAnalyzing, sendMessage, sessionId, clearHistory } = useChat({
+  const { messages, isLoading, isAnalyzing, sendMessage, sessionId, clearHistory, abortRequest } = useChat({
     config,
     metadata,
     externalSessionId
@@ -202,6 +202,7 @@ function App({ config, metadata, externalSessionId }: {
                 isLoading={isLoading}
                 isAnalyzing={isAnalyzing}
                 onSend={sendMessage}
+                onAbort={abortRequest}
                 sessionId={sessionId}
                 config={config}
               />
