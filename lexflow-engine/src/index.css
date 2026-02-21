@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --lexflow-primary: #0f3460;
+    --lexflow-accent: #e94560;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
