@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSpeech } from "../../hooks/useSpeech";
 import { CalendarBooking } from "./CalendarBooking";
 import type { Message } from "../../types";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { LexFlowConfig } from "../../core/ConfigLoader";
 
 interface ChatWindowProps {
@@ -55,7 +57,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, isA
                                 : "bg-gradient-to-tr from-zinc-900/90 to-zinc-950/90 text-white border border-white/10 rounded-tl-sm " + (msg.text ? "p-4" : "p-0")
                                 }`}>
 
-                                {msg.text && <p className="whitespace-pre-wrap break-words">{msg.text}</p>}
+                                {msg.text && (
+                                    <div className="prose prose-invert prose-sm max-w-none text-current prose-p:leading-relaxed prose-pre:bg-zinc-900/50 prose-pre:border prose-pre:border-white/10 prose-strong:text-emerald-400 prose-headings:text-white">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {msg.text}
+                                        </ReactMarkdown>
+                                    </div>
+                                )}
 
                                 {msg.image && (
                                     <div className={`${msg.text ? "mt-2" : ""} rounded-lg overflow-hidden flex justify-center bg-zinc-900/50`}>
