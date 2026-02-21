@@ -12,6 +12,7 @@ interface LexFlowOptions {
   supabaseKey?: string;
   metadata?: Record<string, any>;
   sessionId?: string;
+  webhookUrl?: string;
 }
 
 const init = async (options: LexFlowOptions) => {
@@ -31,6 +32,10 @@ const init = async (options: LexFlowOptions) => {
   if (!config) {
     console.error('LexFlow: Failed to load configuration for ID:', options.id);
     return;
+  }
+
+  if (options.webhookUrl) {
+    config.webhookUrl = options.webhookUrl;
   }
 
   const root = createRoot(container);

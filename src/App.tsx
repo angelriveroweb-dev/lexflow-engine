@@ -30,9 +30,41 @@ function App({ config, metadata, externalSessionId }: {
       const interval = setInterval(() => {
         setHookIndex((prev) => (prev + 1) % launcherMessages.length)
       }, 5000)
-      return () => clearInterval(interval)
+
+      // Exit Intent Logic (replicated from landing)
+      const handleMouseLeave = (e: MouseEvent) => {
+        if (e.clientY <= 0) {
+          setIsOpen(true)
+        }
+      }
+      document.addEventListener('mouseleave', handleMouseLeave)
+
+      return () => {
+        clearInterval(interval)
+        document.removeEventListener('mouseleave', handleMouseLeave)
+      }
+    } else {
+      // Abandonment / Activity Sync
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'hidden' && sessionId) {
+          const data = {
+            sessionId: sessionId,
+            clientId: config.id,
+            action: 'user_abandoned_page',
+            timestamp: new Date().toISOString(),
+            metadata: metadata
+          };
+
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon(config.webhookUrl, JSON.stringify(data));
+          }
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
     }
-  }, [isOpen, launcherMessages.length])
+  }, [isOpen, launcherMessages.length, sessionId, config.id, config.webhookUrl, metadata]);
 
   return (
     <div className="lexflow-engine font-sans selection:bg-[#C6A87C]/30 selection:text-white">
