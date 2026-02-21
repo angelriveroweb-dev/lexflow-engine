@@ -79,7 +79,7 @@ function App({ config }: { config: LexFlowConfig }) {
                 <motion.span
                   animate={{ y: [0, -2, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute top-0 right-0 w-5 h-5 bg-red-600 rounded-full border-2 border-zinc-950 flex items-center justify-center text-[10px] font-bold text-white shadow-lg"
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 rounded-full border-2 border-zinc-950 flex items-center justify-center text-[10px] font-bold text-white shadow-lg pointer-events-none z-10"
                 >
                   1
                 </motion.span>

@@ -129,15 +129,23 @@ import 'https://cdn.jsdelivr.net/gh/angelriveroweb-dev/lexflow-engine@main/dist/
 
 ---
 
-## 🛠️ Desarrollo Local
-1. `npm install`
-2. Configurar `.env.local`
-3. `npm run dev` para previsualizar.
-4. `npm run build` para generar la carpeta `dist/`.
+## � Troubleshooting & Tips
 
-## 🚀 Despliegue
-Al hacer `git push origin main`, los cambios se reflejan automáticamente en el CDN de JSDelivr:
-`https://cdn.jsdelivr.net/gh/angelriveroweb-dev/lexflow-engine@main/dist/lexflow.iife.js`
+### 1. El widget no aparece
+*   **Caché de JSDelivr:** Si acabas de hacer un push, JSDelivr puede tardar en actualizar. Prueba forzar la actualización usando un parámetro: `...lexflow.iife.js?v=refresh`.
+*   **Z-Index:** El widget usa `z-[9999]` para el launcher y `z-[10000]` para la ventana. Verifica que tus componentes no lo estén tapando.
+*   **Init manual:** Asegúrate de que el botId coincida exactamente con el de Supabase o usa `'demo'` para pruebas.
+
+### 2. Cursor Customizado (Importante) 🖱️
+Si tu proyecto tiene un cursor personalizado que sigue al mouse:
+*   El chat tiene un `z-index` de hasta `10000`. Asegúrate de que tu cursor tenga un `z-index` de **10001** o superior para que no desaparezca al pasar sobre el chat.
+*   Agrega `pointer-events: none` a tu componente de cursor para que el usuario pueda cliquear los elementos del chat sin interferencias.
+
+### 3. Integración en Vite
+Al usar el CDN en un proyecto Vite, a veces los imports de CSS vía URL pueden fallar dependiendo de la configuración. Se recomienda agregarlo directamente en el `index.html`:
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/angelriveroweb-dev/lexflow-engine@main/dist/lexflow.css">
+```
 
 ---
 Desarrollado con ❤️ para Escobar & Asociados.
