@@ -82,14 +82,14 @@ function App({ config, metadata, externalSessionId }: {
       <AnimatePresence>
         {!isOpen && (
           <div className="fixed bottom-6 right-6 z-[9999] flex items-center gap-3">
-            {/* Hook Messages - Pill Style exactly as screenshot */}
+            {/* Hook Messages - Pill Style */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={hookIndex}
                 initial={{ opacity: 0, x: 20, scale: 0.9 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, x: 20, scale: 0.9 }}
-                className="bg-zinc-950/90 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full shadow-2xl hidden sm:block"
+                className="bg-zinc-950/90 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full shadow-2xl"
               >
                 <p className="text-sm font-medium text-white tracking-tight">
                   {launcherMessages[hookIndex]}
@@ -145,11 +145,11 @@ function App({ config, metadata, externalSessionId }: {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.9, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: 100, scale: 0.9, filter: "blur(10px)" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed z-[10000] bottom-20 right-6 w-[400px] h-[650px] max-h-[85vh] max-w-[calc(100vw-3rem)] rounded-3xl max-md:inset-0 max-md:bottom-0 max-md:right-0 max-md:w-full max-md:max-w-full max-md:h-[100dvh] max-md:rounded-none flex flex-col bg-zinc-950 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] border border-white/5 overflow-hidden ring-1 ring-white/10"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ type: "spring", damping: 28, stiffness: 220 }}
+            className="fixed z-[10000] inset-0 w-full h-[100dvh] rounded-none md:inset-auto md:bottom-20 md:right-6 md:w-[400px] md:h-[650px] md:max-h-[85vh] md:max-w-[calc(100vw-3rem)] md:rounded-3xl flex flex-col bg-zinc-950 md:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] border-0 md:border md:border-white/5 overflow-hidden md:ring-1 md:ring-white/10"
           >
             {/* Header */}
             <div className="p-5 border-b border-white/5 bg-zinc-900/50 backdrop-blur-xl flex items-center justify-between">
