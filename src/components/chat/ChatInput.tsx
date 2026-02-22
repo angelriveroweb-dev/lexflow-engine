@@ -53,16 +53,32 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading, gradien
             )}
 
             {selectedFile && (
-                <div className="mb-2 mx-2 p-2 bg-zinc-800/80 rounded-lg flex items-center justify-between border border-white/10 animate-in slide-in-from-bottom-2">
-                    <div className="flex items-center gap-2 overflow-hidden">
-                        <div className="w-8 h-8 bg-white/5 rounded flex items-center justify-center text-xs text-zinc-400 font-mono">
-                            {selectedFile.name.split(".").pop()?.toUpperCase() || "FILE"}
+                <div className="mb-3 mx-2 p-3 bg-zinc-900/60 backdrop-blur-md rounded-xl flex items-center justify-between border border-white/5 shadow-2xl animate-in fade-in zoom-in-95 duration-300 relative overflow-hidden group">
+                    {/* Subtle gradient glow effect behind the file */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                    <div className="flex items-center gap-4 relative z-10 w-full overflow-hidden">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold shadow-inner border border-white/10 ${selectedFile.type.includes('pdf') ? 'bg-red-500/10 text-red-400' : selectedFile.type.includes('image') ? 'bg-blue-500/10 text-blue-400' : 'bg-zinc-800 text-zinc-300'}`}>
+                            {selectedFile.name.split(".").pop()?.toUpperCase().substring(0, 3) || "DOC"}
                         </div>
-                        <span className="text-xs text-zinc-300 truncate max-w-[150px]">{selectedFile.name}</span>
+                        <div className="flex flex-col min-w-0 pr-2">
+                            <span className="text-sm font-medium text-zinc-100 truncate w-[160px] tracking-wide">{selectedFile.name}</span>
+                            <span className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">
+                                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • Listo para envío
+                            </span>
+                        </div>
                     </div>
-                    <button onClick={() => setSelectedFile(null)} className="p-1 hover:bg-white/10 rounded-full text-zinc-500 hover:text-white transition-colors">
-                        <XIcon size={14} />
+
+                    <button
+                        onClick={() => setSelectedFile(null)}
+                        className="relative z-10 p-2 bg-black/20 hover:bg-red-500/20 rounded-full text-zinc-400 hover:text-red-400 transition-all duration-300 border border-transparent hover:border-red-500/30 group/btn"
+                        title="Cancelar archivo"
+                    >
+                        <XIcon size={14} className="group-hover/btn:scale-110 group-hover/btn:rotate-90 transition-transform duration-300" />
                     </button>
+
+                    {/* Animated bottom border indicating readiness */}
+                    <div className="absolute bottom-0 left-0 h-[1px] bg-gradient-to-r from-transparent via-[#C6A87C] to-transparent w-full opacity-50"></div>
                 </div>
             )}
 
