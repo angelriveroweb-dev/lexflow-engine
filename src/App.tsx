@@ -109,7 +109,7 @@ function App({ config, metadata, externalSessionId }: {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(true)}
-                className="relative w-16 h-16 rounded-full shadow-2xl transition-all flex items-center justify-center group border border-white/20 bg-zinc-900"
+                className="relative w-16 h-16 rounded-full shadow-2xl shadow-[#C6A87C]/30 transition-all flex items-center justify-center group bg-zinc-900 border-2 border-white/10"
               >
                 <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center">
                   {config.ui.avatarUrl ? (
@@ -134,6 +134,8 @@ function App({ config, metadata, externalSessionId }: {
                   1
                 </motion.span>
               </motion.button>
+              {/* Soft glow behind the avatar icon */}
+              <div className="absolute inset-0 bg-[#C6A87C] blur-[20px] opacity-20 z-[-1] rounded-full animate-pulse pointer-events-none"></div>
             </div>
           </div>
         )}
@@ -147,7 +149,7 @@ function App({ config, metadata, externalSessionId }: {
             animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: 100, scale: 0.9, filter: "blur(10px)" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-[10000] md:inset-auto md:bottom-24 md:right-6 w-full h-[100dvh] md:w-[420px] md:h-[700px] md:max-h-[85vh] flex flex-col bg-zinc-950 md:rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] border border-white/5 overflow-hidden"
+            className="fixed z-[10000] bottom-20 right-6 w-[400px] h-[650px] max-h-[85vh] max-w-[calc(100vw-3rem)] rounded-3xl max-md:inset-0 max-md:bottom-0 max-md:right-0 max-md:w-full max-md:max-w-full max-md:h-[100dvh] max-md:rounded-none flex flex-col bg-zinc-950 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] border border-white/5 overflow-hidden ring-1 ring-white/10"
           >
             {/* Header */}
             <div className="p-5 border-b border-white/5 bg-zinc-900/50 backdrop-blur-xl flex items-center justify-between">

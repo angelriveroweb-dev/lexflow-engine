@@ -61,22 +61,23 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, isA
 
                                 {msg.text && (
                                     <div className="text-[13px] md:text-sm text-current leading-relaxed mt-1">
-                                        <ReactMarkdown 
+                                        <ReactMarkdown
                                             remarkPlugins={[remarkGfm, remarkBreaks]}
                                             components={{
-                                                p: ({node, ...props}) => <p className="mb-3 last:mb-0" {...props} />,
-                                                strong: ({node, ...props}) => <strong className="font-bold text-[#C6A87C]" {...props} />,
-                                                em: ({node, ...props}) => <em className="italic text-zinc-300" {...props} />,
-                                                ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-3 space-y-1" {...props} />,
-                                                ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-3 space-y-1" {...props} />,
-                                                li: ({node, ...props}) => <li className="marker:text-[#C6A87C]" {...props} />,
-                                                h1: ({node, ...props}) => <h1 className="text-lg font-bold text-white mb-2 mt-4" {...props} />,
-                                                h2: ({node, ...props}) => <h2 className="text-base font-bold text-white mb-2 mt-4" {...props} />,
-                                                h3: ({node, ...props}) => <h3 className="text-sm font-bold text-white mb-2 mt-3" {...props} />,
-                                                a: ({node, ...props}) => <a className="text-[#C6A87C] underline hover:text-white transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
-                                                code: ({node, inline, ...props}: any) => 
+                                                p: ({ node, ...props }) => <p className="mb-3 last:mb-0" {...props} />,
+                                                strong: ({ node, ...props }) => <strong className="font-bold text-[#C6A87C]" {...props} />,
+                                                em: ({ node, ...props }) => <em className="italic text-zinc-300" {...props} />,
+                                                ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-3 space-y-1" {...props} />,
+                                                ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-3 space-y-1" {...props} />,
+                                                li: ({ node, ...props }) => <li className="marker:text-[#C6A87C]" {...props} />,
+                                                h1: ({ node, ...props }) => <h1 className="text-lg font-bold text-white mb-2 mt-4" {...props} />,
+                                                h2: ({ node, ...props }) => <h2 className="text-base font-bold text-white mb-2 mt-4" {...props} />,
+                                                h3: ({ node, ...props }) => <h3 className="text-sm font-bold text-white mb-2 mt-3" {...props} />,
+                                                a: ({ node, ...props }) => <a className="text-[#C6A87C] underline hover:text-white transition-colors break-words" target="_blank" rel="noopener noreferrer" {...props} />,
+                                                img: ({ node, ...props }) => <img className="rounded-lg border border-white/10 my-3 max-w-full h-auto shadow-md" loading="lazy" {...props} />,
+                                                code: ({ node, inline, ...props }: any) =>
                                                     inline ? <code className="bg-zinc-900 border border-white/10 px-1 py-0.5 rounded text-emerald-400 font-mono text-[11px]" {...props} />
-                                                           : <pre className="bg-zinc-900 border border-white/10 p-3 rounded-lg overflow-x-auto text-[11px] font-mono text-zinc-300 my-3"><code {...props} /></pre>
+                                                        : <pre className="bg-zinc-900 border border-white/10 p-3 rounded-lg overflow-x-auto text-[11px] font-mono text-zinc-300 my-3"><code {...props} /></pre>
                                             }}
                                         >
                                             {/* Unescape markdown asterisks and underscores if LLM incorrectly escaped them */}
@@ -176,7 +177,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, isA
                             className="absolute inset-x-0 h-12 bg-gradient-to-b from-transparent via-[#C6A87C]/10 to-transparent z-0"
                             style={{ filter: "blur(8px)" }}
                         />
-                        
+
                         <div className="relative z-10 flex flex-col items-center text-center">
                             <div className="relative w-16 h-16 mb-4">
                                 <motion.div
@@ -191,21 +192,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, isA
                                 />
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <Bot size={22} className="text-[#C6A87C]" />
-                                    <motion.div 
+                                    <motion.div
                                         animate={{ opacity: [0, 1, 0] }}
                                         transition={{ duration: 1.5, repeat: Infinity }}
                                         className="absolute inset-0 rounded-full bg-[#C6A87C]/20"
                                     />
                                 </div>
                             </div>
-                            
+
                             <h4 className="text-white font-medium text-base mb-1">Evaluando Documento</h4>
                             <p className="text-zinc-400 text-xs mb-4 max-w-[200px] leading-relaxed">
                                 Escaneando contenido legal e identificando puntos críticos...
                             </p>
-                            
-                            <button 
-                                onClick={onAbort} 
+
+                            <button
+                                onClick={onAbort}
                                 className="px-5 py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl text-xs font-semibold hover:bg-red-500/20 hover:scale-105 transition-all shadow-sm flex items-center gap-2"
                             >
                                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
