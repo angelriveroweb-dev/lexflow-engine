@@ -66,7 +66,12 @@ function App({ config, metadata, externalSessionId }: {
           };
 
           if (navigator.sendBeacon) {
-            navigator.sendBeacon(config.webhookUrl, JSON.stringify(data));
+            const payload = JSON.stringify(data);
+            // Send to main webhook (chat flow)
+            navigator.sendBeacon(config.webhookUrl, payload);
+            // Send to El Rescatista (lead retention workflow)
+            const rescatistaUrl = config.webhookUrl.replace(/\/webhook\/.*$/, '/webhook/lead-abandonment');
+            navigator.sendBeacon(rescatistaUrl, payload);
           }
         }
       };
