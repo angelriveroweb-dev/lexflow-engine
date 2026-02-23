@@ -1,5 +1,11 @@
 import { createSupabaseClient } from '../lib/supabase';
 
+export interface BusinessHours {
+    start: number;   // hour 0-23, e.g. 9
+    end: number;     // hour 0-23, e.g. 18
+    days: number[];  // 0=Sun, 1=Mon ... 6=Sat, e.g. [1,2,3,4,5]
+}
+
 export interface LexFlowConfig {
     id: string;
     name: string;
@@ -24,7 +30,9 @@ export interface LexFlowConfig {
         files: boolean;
         calendar: boolean;
     };
+    businessHours: BusinessHours;
     webhookUrl: string;
+    maxFileSizeMB: number;
 }
 
 export class ConfigLoader {
@@ -77,16 +85,23 @@ export class ConfigLoader {
                 messages: {
                     welcome: data.msg_welcome,
                     suggestions: Array.isArray(data.msg_suggestions) ? data.msg_suggestions : [],
-                    fallback: 'Lo siento, no pude procesar tu solicitud.'
+                    fallback: data.msg_fallback || 'Lo siento, no pude procesar tu solicitud.'
                 },
                 features: {
                     voice: !!data.feat_voice,
                     files: !!data.feat_files,
                     calendar: !!data.feat_calendar
                 },
+                businessHours: {
+                    start: data.business_hours_start ?? 9,
+                    end: data.business_hours_end ?? 18,
+                    days: Array.isArray(data.business_days) ? data.business_days : [1, 2, 3, 4, 5]
+                },
+                maxFileSizeMB: data.max_file_size_mb ?? 10,
                 webhookUrl: data.webhook_url || 'https://n8n.angelstudio.design/webhook/chatbot'
             };
         } catch (err) {
+            console.error('LexFlow: Config load error', err);
             return this.getMockConfig();
         }
     }
@@ -120,6 +135,12 @@ export class ConfigLoader {
                 files: true,
                 calendar: true
             },
+            businessHours: {
+                start: 9,
+                end: 18,
+                days: [1, 2, 3, 4, 5]
+            },
+            maxFileSizeMB: 10,
             webhookUrl: 'https://n8n.angelstudio.design/webhook/chatbot'
         };
     }

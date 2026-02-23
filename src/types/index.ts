@@ -11,4 +11,7 @@ export interface Message {
     suggestions?: string[];
     sources?: { title: string; url: string }[];
     escalate?: boolean;
+    paymentLink?: string;
+    paymentAmount?: string;
+    leadStatus?: string;
 }

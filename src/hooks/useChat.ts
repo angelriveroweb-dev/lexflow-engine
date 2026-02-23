@@ -4,31 +4,44 @@ import type { LexFlowConfig } from '../core/ConfigLoader';
 import { getVisitorId, generateUUID } from '../lib/utils';
 
 export interface UseChatProps {
-
     config: LexFlowConfig;
     metadata?: Record<string, any>;
     externalSessionId?: string;
 }
+
+const MAX_MESSAGES_PER_MINUTE = 15;
+const MAX_RETRIES = 1;
+const RETRY_DELAY_MS = 2000;
+const MAX_HISTORY_MESSAGES = 100;
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-    // Persistent Session ID
+    // Persistent Session ID — single source of truth
     const [sessionId] = useState(() => {
         if (typeof window === 'undefined') return '';
-
-        // Priority for external session ID
         if (externalSessionId) return externalSessionId;
 
         const stored = localStorage.getItem(`lexflow_session_id_${config.id}`);
-        if (stored) return stored;
+        if (stored && stored !== 'undefined') return stored;
 
         const newId = generateUUID();
         localStorage.setItem(`lexflow_session_id_${config.id}`, newId);
         return newId;
     });
+
+    // Rate limiting
+    const messageTimes = useRef<number[]>([]);
+
+    const isRateLimited = useCallback((): boolean => {
+        const now = Date.now();
+        messageTimes.current = messageTimes.current.filter(t => now - t < 60_000);
+        return messageTimes.current.length >= MAX_MESSAGES_PER_MINUTE;
+    }, []);
 
     // Load History
     useEffect(() => {
@@ -37,12 +50,12 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         if (storedMessages) {
             try {
                 const parsed = JSON.parse(storedMessages);
-                setMessages(parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
+                const limited = parsed.slice(-MAX_HISTORY_MESSAGES);
+                setMessages(limited.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
             } catch (e) {
-                console.error("LexFlow: Failed to parse history", e);
+                console.error('LexFlow: Failed to parse history', e);
             }
         } else {
-            // Initial Welcome Message from Config
             setMessages([{
                 id: 'welcome',
                 text: config.messages.welcome,
@@ -53,10 +66,11 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         }
     }, [sessionId, config]);
 
-    // Save History
+    // Save History (capped at MAX_HISTORY_MESSAGES)
     useEffect(() => {
         if (messages.length > 0 && sessionId) {
-            localStorage.setItem(`lexflow_history_${sessionId}`, JSON.stringify(messages));
+            const toStore = messages.slice(-MAX_HISTORY_MESSAGES);
+            localStorage.setItem(`lexflow_history_${sessionId}`, JSON.stringify(toStore));
         }
     }, [messages, sessionId]);
 
@@ -70,15 +84,49 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
             setIsLoading(false);
             setMessages(prev => [...prev, {
                 id: generateUUID(),
-                text: "❌ La operación ha sido cancelada.",
+                text: '❌ La operación ha sido cancelada.',
                 sender: 'bot',
                 timestamp: new Date()
             }]);
         }
     }, []);
 
+    const doFetch = useCallback(async (formData: FormData, signal: AbortSignal): Promise<any> => {
+        const response = await fetch(config.webhookUrl, {
+            method: 'POST',
+            body: formData,
+            signal
+        });
+        if (!response.ok) throw new Error(`Webhook error: ${response.status}`);
+        return response.json();
+    }, [config.webhookUrl]);
+
     const sendMessage = useCallback(async (text: string, file?: File) => {
-        if ((!text.trim() && !file)) return;
+        if (!text.trim() && !file) return;
+
+        if (isRateLimited()) {
+            setMessages(prev => [...prev, {
+                id: generateUUID(),
+                text: '⏳ Por favor esperá un momento antes de enviar otro mensaje.',
+                sender: 'bot',
+                timestamp: new Date()
+            }]);
+            return;
+        }
+
+        // Validate file size
+        const maxBytes = (config.maxFileSizeMB || 10) * 1024 * 1024;
+        if (file && file.size > maxBytes) {
+            setMessages(prev => [...prev, {
+                id: generateUUID(),
+                text: `❌ El archivo supera el límite de ${config.maxFileSizeMB || 10}MB. Por favor reducí el tamaño.`,
+                sender: 'bot',
+                timestamp: new Date()
+            }]);
+            return;
+        }
+
+        messageTimes.current.push(Date.now());
 
         const userMsg: Message = {
             id: generateUUID(),
@@ -89,64 +137,74 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         };
 
         setMessages(prev => [...prev, userMsg]);
+        file ? setIsAnalyzing(true) : setIsLoading(true);
 
-        if (file) {
-            setIsAnalyzing(true);
-        } else {
-            setIsLoading(true);
-        }
+        const effectiveClientId = metadata?.clientId || config.id;
+        const effectiveVisitorId = getVisitorId();
+
+        const buildFormData = (): FormData => {
+            const fd = new FormData();
+            fd.append('sessionId', sessionId);
+            fd.append('text', text);
+            fd.append('clientId', effectiveClientId);
+            fd.append('visitorId', effectiveVisitorId);
+            fd.append('metadata', JSON.stringify({
+                clientId: effectiveClientId,
+                visitorId: effectiveVisitorId,
+                sessionId,
+                url: typeof window !== 'undefined' ? window.location.href : '',
+                timestamp: new Date().toISOString(),
+                ...metadata
+            }));
+            if (file) {
+                fd.append('file', file);
+                fd.append('action', 'file_upload');
+            } else {
+                fd.append('action', 'user_message');
+            }
+            return fd;
+        };
+
+        let data: any = null;
+        let attempt = 0;
 
         try {
             abortControllerRef.current = new AbortController();
-            const formData = new FormData();
 
-            // ALWAYS read visitorId directly from localStorage via utility (standardized)
-            const effectiveClientId = metadata?.clientId || config.id;
-            const effectiveVisitorId = getVisitorId();
-
-            formData.append('sessionId', sessionId);
-            formData.append('text', text);
-            formData.append('clientId', effectiveClientId);
-            formData.append('visitorId', effectiveVisitorId);
-
-            formData.append('metadata', JSON.stringify({
-                clientId: effectiveClientId,
-                visitorId: effectiveVisitorId,
-                sessionId: sessionId,
-                url: typeof window !== 'undefined' ? window.location.href : '',
-                timestamp: new Date().toISOString(),
-                ...metadata // Spread custom metadata
-            }));
-
-            if (file) {
-                formData.append('file', file);
-                formData.append('action', 'file_upload');
-            } else {
-                formData.append('action', 'user_message');
+            while (attempt <= MAX_RETRIES) {
+                try {
+                    data = await doFetch(buildFormData(), abortControllerRef.current.signal);
+                    break;
+                } catch (err: any) {
+                    if (err.name === 'AbortError') throw err;
+                    if (attempt < MAX_RETRIES) {
+                        console.warn(`LexFlow: Request failed, retrying in ${RETRY_DELAY_MS}ms...`, err);
+                        await sleep(RETRY_DELAY_MS);
+                        attempt++;
+                    } else {
+                        throw err;
+                    }
+                }
             }
 
-            const response = await fetch(config.webhookUrl, {
-                method: 'POST',
-                body: formData,
-                signal: abortControllerRef.current.signal
-            });
-
-            if (!response.ok) throw new Error(`Webhook error: ${response.status}`);
-
-            const data = await response.json();
-
-            // Flexible Parsing
+            // Flexible response parsing
             const normalizedData = Array.isArray(data) && data.length > 0 ? data[0] : data;
             let botText = '';
             let suggestions: string[] = [];
-            let action: string | undefined = undefined;
+            let action: string | undefined;
+            let paymentLink: string | undefined;
+            let paymentAmount: string | undefined;
+            let leadStatus: string | undefined;
 
             if (typeof normalizedData === 'object' && normalizedData !== null) {
                 botText = normalizedData.text || normalizedData.output || normalizedData.message || '';
                 suggestions = normalizedData.suggestions || normalizedData.options || [];
                 action = normalizedData.action;
+                paymentLink = normalizedData.paymentLink || normalizedData.payment_link;
+                paymentAmount = normalizedData.paymentAmount || normalizedData.payment_amount;
+                leadStatus = normalizedData.leadStatus || normalizedData.lead_status;
 
-                // Handle stringified JSON in text
+                // Handle stringified JSON in text field (LLM sometimes wraps in ```json)
                 if (typeof botText === 'string' && (botText.trim().startsWith('{') || botText.trim().includes('```json'))) {
                     try {
                         let cleanText = botText.trim();
@@ -158,7 +216,12 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                         if (parsed.text) botText = parsed.text;
                         if (parsed.suggestions) suggestions = parsed.suggestions;
                         if (parsed.action) action = parsed.action;
-                    } catch (e) { }
+                        if (parsed.paymentLink || parsed.payment_link) paymentLink = parsed.paymentLink || parsed.payment_link;
+                        if (parsed.paymentAmount || parsed.payment_amount) paymentAmount = parsed.paymentAmount || parsed.payment_amount;
+                        if (parsed.leadStatus || parsed.lead_status) leadStatus = parsed.leadStatus || parsed.lead_status;
+                    } catch (parseErr) {
+                        console.warn('LexFlow: Could not parse JSON in bot text', parseErr);
+                    }
                 }
             } else {
                 botText = String(normalizedData);
@@ -169,11 +232,14 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                 text: botText,
                 sender: 'bot',
                 timestamp: new Date(),
-                suggestions: suggestions.length > 0 ? suggestions : (normalizedData.suggestions || normalizedData.options || []),
-                options: suggestions.length > 0 ? suggestions : (normalizedData.suggestions || normalizedData.options || []),
-                action: action,
-                image: normalizedData.image,
-                video: normalizedData.video
+                suggestions: suggestions.length > 0 ? suggestions : [],
+                options: suggestions.length > 0 ? suggestions : [],
+                action,
+                image: normalizedData?.image,
+                video: normalizedData?.video,
+                paymentLink,
+                paymentAmount,
+                leadStatus
             };
 
             setMessages(prev => [...prev, botMsg]);
@@ -186,20 +252,21 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
             console.error('LexFlow: Chat Error:', error);
             setMessages(prev => [...prev, {
                 id: generateUUID(),
-                text: "Lo siento, hubo un problema de conexión. Por favor, intenta de nuevo.",
+                text: config.messages.fallback || 'Lo siento, hubo un problema de conexión. Por favor, intenta de nuevo.',
                 sender: 'bot',
-                timestamp: new Date()
+                timestamp: new Date(),
+                options: ['🔄 Reintentar', '📞 Contactar por WhatsApp']
             }]);
         } finally {
             setIsLoading(false);
             setIsAnalyzing(false);
             abortControllerRef.current = null;
         }
-    }, [sessionId, config, metadata]);
+    }, [sessionId, config, metadata, isRateLimited, doFetch]);
 
-    const clearHistory = () => {
+    const clearHistory = useCallback(() => {
         localStorage.removeItem(`lexflow_history_${sessionId}`);
-        localStorage.removeItem('visitor_session_id');
+        // Reset state without page reload
         setMessages([{
             id: 'welcome-reset',
             text: config.messages.welcome,
@@ -207,8 +274,8 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
             timestamp: new Date(),
             options: config.messages.suggestions || []
         }]);
-        window.location.reload();
-    };
+        messageTimes.current = [];
+    }, [sessionId, config]);
 
     return {
         messages,
