@@ -84,7 +84,7 @@ export class ConfigLoader {
                     files: !!data.feat_files,
                     calendar: !!data.feat_calendar
                 },
-                webhookUrl: data.webhook_url || 'https://n8n.angelstudio.design/webhook'
+                webhookUrl: data.webhook_url || 'https://n8n.angelstudio.design/webhook/chatbot'
             };
         } catch (err) {
             return this.getMockConfig();
@@ -120,7 +120,7 @@ export class ConfigLoader {
                 files: true,
                 calendar: true
             },
-            webhookUrl: 'https://n8n.angelstudio.design/webhook/test'
+            webhookUrl: 'https://n8n.angelstudio.design/webhook/chatbot'
         };
     }
 }

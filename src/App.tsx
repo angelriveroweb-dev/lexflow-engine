@@ -25,6 +25,52 @@ function App({ config, metadata, externalSessionId }: {
     'Hable con un especialista ahora'
   ]
 
+  // Abandonment tracking - ALWAYS active, independent of chat state
+  useEffect(() => {
+    if (!config.webhookUrl) {
+      console.warn('LexFlow: No webhookUrl configured');
+      return;
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && sessionId) {
+        const effectiveClientId = metadata?.clientId || config.id;
+        const effectiveVisitorId = localStorage.getItem('visitor_id') || '';
+
+        const data = {
+          sessionId: sessionId,
+          text: '[User left page]',
+          clientId: effectiveClientId,
+          visitorId: effectiveVisitorId,
+          action: 'user_abandoned_page',
+          metadata: JSON.stringify({
+            clientId: effectiveClientId,
+            visitorId: effectiveVisitorId,
+            url: window.location.href,
+            timestamp: new Date().toISOString(),
+            ...metadata
+          })
+        };
+
+        console.log('LexFlow: Sending abandonment webhook to:', config.webhookUrl);
+
+        if (navigator.sendBeacon) {
+          const payload = JSON.stringify(data);
+          // Send to main webhook (chat flow)
+          navigator.sendBeacon(config.webhookUrl, payload);
+          // Send to El Rescatista (lead retention workflow)
+          const rescatistaUrl = config.webhookUrl.replace(/\/webhook\/.*$/, '/webhook/lead-abandonment');
+          console.log('LexFlow: Sending to El Rescatista:', rescatistaUrl);
+          navigator.sendBeacon(rescatistaUrl, payload);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [sessionId, config.id, config.webhookUrl, metadata]);
+
+  // Chat launcher hooks rotation
   useEffect(() => {
     if (!isOpen) {
       const interval = setInterval(() => {
@@ -43,43 +89,8 @@ function App({ config, metadata, externalSessionId }: {
         clearInterval(interval)
         document.removeEventListener('mouseleave', handleMouseLeave)
       }
-    } else {
-      // Abandonment / Activity Sync
-      const handleVisibilityChange = () => {
-        if (document.visibilityState === 'hidden' && sessionId) {
-          const effectiveClientId = metadata?.clientId || config.id;
-          const effectiveVisitorId = localStorage.getItem('visitor_id') || '';
-
-          const data = {
-            sessionId: sessionId,
-            text: '[User left page]',
-            clientId: effectiveClientId,
-            visitorId: effectiveVisitorId,
-            action: 'user_abandoned_page',
-            metadata: JSON.stringify({
-              clientId: effectiveClientId,
-              visitorId: effectiveVisitorId,
-              url: window.location.href,
-              timestamp: new Date().toISOString(),
-              ...metadata
-            })
-          };
-
-          if (navigator.sendBeacon) {
-            const payload = JSON.stringify(data);
-            // Send to main webhook (chat flow)
-            navigator.sendBeacon(config.webhookUrl, payload);
-            // Send to El Rescatista (lead retention workflow)
-            const rescatistaUrl = config.webhookUrl.replace(/\/webhook\/.*$/, '/webhook/lead-abandonment');
-            navigator.sendBeacon(rescatistaUrl, payload);
-          }
-        }
-      };
-
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-      return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
     }
-  }, [isOpen, launcherMessages.length, sessionId, config.id, config.webhookUrl, metadata]);
+  }, [isOpen, launcherMessages.length]);
 
   return (
     <div className="lexflow-engine font-sans selection:bg-[#C6A87C]/30 selection:text-white">
