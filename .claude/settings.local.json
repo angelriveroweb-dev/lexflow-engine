@@ -21,7 +21,17 @@
       "mcp__n8n-mcp__n8n_update_partial_workflow",
       "mcp__n8n-mcp__n8n_update_full_workflow",
       "Bash(tail:*)",
-      "mcp__n8n-mcp__n8n_executions"
+      "mcp__n8n-mcp__n8n_executions",
+      "mcp__supabase__get_project_url",
+      "mcp__n8n-mcp__n8n_list_workflows",
+      "mcp__supabase__apply_migration",
+      "mcp__n8n-mcp__n8n_health_check",
+      "mcp__n8n-mcp__tools_documentation",
+      "mcp__n8n-mcp__n8n_autofix_workflow",
+      "mcp__n8n-mcp__validate_node",
+      "Bash(cd \"/c/Users/usuario/Documents/A.--------- WEBSITES ------------/testing-area/lexflow-engine\" && npm run build 2>&1)",
+      "Bash(cd:*)",
+      "Bash(cd \"/c/Users/usuario/Documents/A.--------- WEBSITES ------------/testing-area/lexflow-engine\" && git push origin main 2>&1)"
     ]
   }
 }
