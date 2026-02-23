@@ -84,7 +84,7 @@ export class ConfigLoader {
                     files: !!data.feat_files,
                     calendar: !!data.feat_calendar
                 },
-                webhookUrl: data.webhook_url || 'https://n8n.angelstudio.design/webhook/test'
+                webhookUrl: data.webhook_url || 'https://n8n.angelstudio.design/webhook'
             };
         } catch (err) {
             return this.getMockConfig();
