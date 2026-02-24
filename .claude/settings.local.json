@@ -31,7 +31,16 @@
       "mcp__n8n-mcp__validate_node",
       "Bash(cd \"/c/Users/usuario/Documents/A.--------- WEBSITES ------------/testing-area/lexflow-engine\" && npm run build 2>&1)",
       "Bash(cd:*)",
-      "Bash(cd \"/c/Users/usuario/Documents/A.--------- WEBSITES ------------/testing-area/lexflow-engine\" && git push origin main 2>&1)"
+      "Bash(cd \"/c/Users/usuario/Documents/A.--------- WEBSITES ------------/testing-area/lexflow-engine\" && git push origin main 2>&1)",
+      "mcp__mcp-sync-hub__read_project_context",
+      "mcp__mcp-sync-hub__get_pending_tasks",
+      "mcp__mcp-sync-hub__get_activity_logs",
+      "mcp__mcp-sync-hub__read_db_schema",
+      "Bash(python3:*)",
+      "mcp__mcp-sync-hub__update_task_status",
+      "Bash(cygpath:*)",
+      "Bash(export OUTDIR=\"$HOME\" && node -e \"\nconst fs = require\\('fs'\\);\nconst path = require\\('path'\\);\nconst nodes = JSON.parse\\(fs.readFileSync\\(path.join\\(process.env.OUTDIR, 'v12_nodes.json'\\), 'utf8'\\)\\);\nconst connections = JSON.parse\\(fs.readFileSync\\(path.join\\(process.env.OUTDIR, 'v12_connections.json'\\), 'utf8'\\)\\);\n\n// Print node names and types for analysis\nnodes.forEach\\(\\(n, i\\) => {\n  console.log\\(i + '. ' + n.name + ' [' + n.type + '] pos:' + JSON.stringify\\(n.position\\)\\);\n}\\);\n\" 2>&1)",
+      "Bash(export:*)"
     ]
   }
 }

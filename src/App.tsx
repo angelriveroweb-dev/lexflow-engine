@@ -4,6 +4,7 @@ import { X, MessageCircle, Trash2, ArrowLeft, Bot } from 'lucide-react'
 import { useChat } from './hooks/useChat'
 import { ChatWindow } from './components/chat/ChatWindow'
 import { ChatInput } from './components/chat/ChatInput'
+import { getVisitorId } from './lib/utils'
 import type { LexFlowConfig } from './core/ConfigLoader'
 
 function App({ config, metadata, externalSessionId }: {
@@ -35,7 +36,7 @@ function App({ config, metadata, externalSessionId }: {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden' && sessionId) {
         const effectiveClientId = metadata?.clientId || config.id;
-        const effectiveVisitorId = localStorage.getItem('visitor_id') || '';
+        const effectiveVisitorId = getVisitorId();
 
         const data = {
           sessionId,
@@ -253,7 +254,10 @@ function App({ config, metadata, externalSessionId }: {
                   <div className="h-[1px] w-8 bg-zinc-500"></div>
                 </div>
                 <p className="text-[8px] text-zinc-600 font-medium tracking-widest uppercase">
-                  LexFlow Engine v1.2
+                  LexFlow Engine v1.3
+                </p>
+                <p className="text-[8px] text-zinc-500 font-black tracking-widest uppercase">
+                  HECHO POR ANGEL DESIGN STUDIO
                 </p>
               </div>
             </div>
