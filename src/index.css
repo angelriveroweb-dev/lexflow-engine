@@ -3,7 +3,7 @@
 
 @layer base {
   :root {
-    --lexflow-primary: #C6A87C;
+    /* Dynamic colors are handled via inline styles and CSS variables in App.tsx */
   }
 
   /* Custom scrollbar for a premium feel */

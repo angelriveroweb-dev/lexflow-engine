@@ -12,6 +12,8 @@ export interface LexFlowConfig {
     ui: {
         title: string;
         subtitle: string;
+        slogan?: string;
+        description?: string;
         avatarUrl: string;
         primaryColor: string;
         accentColor: string;
@@ -56,11 +58,11 @@ export class ConfigLoader {
             const { data, error } = await supabase
                 .from('lexflow_configs')
                 .select('*')
-                .eq('id', id)
+                .eq('client_id', id)
                 .single();
 
             if (error) {
-                console.warn(`LexFlow: Config ID ${id} not found in lexflow_configs, falling back to mock.`, error);
+                console.warn(`LexFlow: Config for Client ID ${id} not found in lexflow_configs, falling back to mock.`, error);
                 return this.getMockConfig();
             }
 
@@ -70,6 +72,8 @@ export class ConfigLoader {
                 ui: {
                     title: data.ui_title,
                     subtitle: data.ui_subtitle,
+                    slogan: data.ui_slogan,
+                    description: data.ui_description,
                     avatarUrl: data.ui_avatar_url || 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=400&auto=format&fit=crop',
                     primaryColor: data.ui_primary_color,
                     accentColor: data.ui_accent_color,
@@ -98,7 +102,7 @@ export class ConfigLoader {
                     days: Array.isArray(data.business_days) ? data.business_days : [1, 2, 3, 4, 5]
                 },
                 maxFileSizeMB: data.max_file_size_mb ?? 10,
-                webhookUrl: data.webhook_url || 'https://n8n.angelstudio.design/webhook/chatbot'
+                webhookUrl: data.webhook_url || 'https://n8n.angelstudio.design/webhook/f93e0d29-7ccb-4a9f-aaa0-49d0c135df1c'
             };
         } catch (err) {
             console.error('LexFlow: Config load error', err);
@@ -113,9 +117,11 @@ export class ConfigLoader {
             ui: {
                 title: 'LexFlow Assistant',
                 subtitle: 'Online 24/7',
+                slogan: 'Tu asistente legal inteligente',
+                description: 'Estamos aquí para ayudarte con tus consultas legales de forma rápida y eficiente.',
                 avatarUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=400&auto=format&fit=crop',
                 primaryColor: '#0f3460',
-                accentColor: 'emerald-500',
+                accentColor: '#C6A87C',
                 gradient: 'from-[#0f3460] to-[#1a1a2e]',
                 launcherLabel: 'Chat',
                 launcherMessages: [
@@ -141,7 +147,7 @@ export class ConfigLoader {
                 days: [1, 2, 3, 4, 5]
             },
             maxFileSizeMB: 10,
-            webhookUrl: 'https://n8n.angelstudio.design/webhook/chatbot'
+            webhookUrl: 'https://n8n.angelstudio.design/webhook/f93e0d29-7ccb-4a9f-aaa0-49d0c135df1c'
         };
     }
 }

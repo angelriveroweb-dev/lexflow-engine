@@ -13,6 +13,7 @@ interface CalendarBookingProps {
     sessionId: string;
     webhookUrl: string;
     primaryColor: string;
+    accentColor: string;
     businessHours?: BusinessHours;
 }
 
@@ -27,6 +28,7 @@ export const CalendarBooking: React.FC<CalendarBookingProps> = ({
     sessionId,
     webhookUrl,
     primaryColor,
+    accentColor,
     businessHours = DEFAULT_BUSINESS_HOURS
 }) => {
     const [selectedDate, setSelectedDate] = useState<Date>(() => {
@@ -217,7 +219,7 @@ export const CalendarBooking: React.FC<CalendarBookingProps> = ({
                             </span>
                             <span className="text-xs font-bold">{day.getDate()}</span>
                             {isToday && (
-                                <span className={"text-[7px] font-bold mt-0.5 " + (isSelected ? 'text-zinc-950/60' : 'text-[#C6A87C]')}>
+                                <span className={"text-[7px] font-bold mt-0.5 " + (isSelected ? 'text-zinc-950/60' : '')} style={{ color: isSelected ? undefined : accentColor }}>
                                     HOY
                                 </span>
                             )}

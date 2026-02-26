@@ -6,6 +6,7 @@ interface ChatInputProps {
     onSend: (text: string, file?: File) => void;
     isLoading: boolean;
     primaryColor: string;
+    accentColor: string;
     gradient: string;
     maxFileSizeMB?: number;
     featFiles?: boolean;
@@ -18,6 +19,7 @@ const MAX_TEXTAREA_HEIGHT = 128; // px
 export const ChatInput: React.FC<ChatInputProps> = ({
     onSend,
     isLoading,
+    accentColor,
     gradient,
     maxFileSizeMB = 10,
     featFiles = true,
@@ -134,7 +136,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         <XIcon size={14} />
                     </button>
 
-                    <div className="absolute bottom-0 left-0 h-[1px] bg-gradient-to-r from-transparent via-[#C6A87C] to-transparent w-full opacity-50"></div>
+                    <div className="absolute bottom-0 left-0 h-[1px] w-full opacity-50" style={{ background: `linear-gradient(to right, transparent, ${accentColor}, transparent)` }}></div>
                 </div>
             )}
 
@@ -164,7 +166,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 {featVoice && isSupported && (
                     <button
                         onClick={() => isListening ? stopListening() : startListening()}
-                        className={"p-2 rounded-lg transition-colors " + (isListening ? "text-[#C6A87C] bg-white/5" : "text-zinc-500 hover:text-white hover:bg-white/5")}
+                        className={`p-2 rounded-lg transition-colors ${isListening ? "" : "text-zinc-500 hover:text-white hover:bg-white/5"}`}
+                        style={{ color: isListening ? accentColor : undefined, backgroundColor: isListening ? 'rgba(255,255,255,0.05)' : undefined }}
                         aria-label={isListening ? "Detener dictado" : "Dictar mensaje por voz"}
                         title={isListening ? "Detener dictado" : "Dictar por voz"}
                     >

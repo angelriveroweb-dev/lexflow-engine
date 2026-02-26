@@ -19,7 +19,7 @@ interface ChatWindowProps {
     config: LexFlowConfig;
 }
 
-const TypingIndicator: React.FC<{ gradient: string }> = ({ gradient }) => (
+const TypingIndicator: React.FC<{ gradient: string, accentColor: string }> = ({ gradient, accentColor }) => (
     <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -32,9 +32,9 @@ const TypingIndicator: React.FC<{ gradient: string }> = ({ gradient }) => (
             <Bot size={16} className="text-white" aria-hidden />
         </div>
         <div className="bg-zinc-900 border border-white/10 p-4 rounded-2xl rounded-tl-sm flex gap-1.5 items-center">
-            <span className="w-1.5 h-1.5 bg-[#C6A87C] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-            <span className="w-1.5 h-1.5 bg-[#C6A87C]/60 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-            <span className="w-1.5 h-1.5 bg-[#C6A87C]/30 rounded-full animate-bounce"></span>
+            <span className="w-1.5 h-1.5 rounded-full animate-bounce [animation-delay:-0.3s]" style={{ backgroundColor: accentColor }}></span>
+            <span className="w-1.5 h-1.5 rounded-full animate-bounce [animation-delay:-0.15s]" style={{ backgroundColor: accentColor + '99' }}></span>
+            <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: accentColor + '4D' }}></span>
         </div>
     </motion.div>
 );
@@ -163,17 +163,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                                             remarkPlugins={[remarkGfm, remarkBreaks]}
                                             components={{
                                                 p: ({ node, ...props }) => <p className="mb-3 last:mb-0" {...props} />,
-                                                strong: ({ node, ...props }) => <strong className="font-bold text-[#C6A87C]" {...props} />,
+                                                strong: ({ node, ...props }) => <strong className="font-bold" style={{ color: config.ui.accentColor }} {...props} />,
                                                 em: ({ node, ...props }) => <em className="italic text-zinc-300" {...props} />,
                                                 ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-3 space-y-1" {...props} />,
                                                 ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-3 space-y-1" {...props} />,
-                                                li: ({ node, ...props }) => <li className="marker:text-[#C6A87C]" {...props} />,
+                                                li: ({ node, ...props }) => <li className="marker:text-zinc-400" style={{ markerColor: config.ui.accentColor } as any} {...props} />,
                                                 h1: ({ node, ...props }) => <h1 className="text-lg font-bold text-white mb-2 mt-4" {...props} />,
                                                 h2: ({ node, ...props }) => <h2 className="text-base font-bold text-white mb-2 mt-4" {...props} />,
                                                 h3: ({ node, ...props }) => <h3 className="text-sm font-bold text-white mb-2 mt-3" {...props} />,
                                                 a: ({ node, ...props }) => (
                                                     <a
-                                                        className="text-[#C6A87C] underline hover:text-white transition-colors break-words"
+                                                        className="underline hover:text-white transition-colors break-words"
+                                                        style={{ color: config.ui.accentColor }}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         {...props}
@@ -222,7 +223,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                                 {msg.sender === "bot" && msg.text && (
                                     <button
                                         onClick={() => isSpeaking ? stopSpeaking() : speak(msg.text!)}
-                                        className={`absolute -right-10 top-2 p-1.5 rounded-full bg-zinc-900 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#C6A87C] hover:bg-zinc-800 ${isSpeaking ? "text-[#C6A87C] opacity-100" : ""}`}
+                                        className={`absolute -right-10 top-2 p-1.5 rounded-full bg-zinc-900 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-zinc-800 ${isSpeaking ? "opacity-100" : ""}`}
+                                        style={{ color: isSpeaking ? config.ui.accentColor : undefined }}
                                         aria-label={isSpeaking ? "Detener lectura" : "Escuchar mensaje"}
                                         title={isSpeaking ? "Detener" : "Escuchar"}
                                     >
@@ -237,6 +239,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                                     sessionId={sessionId}
                                     webhookUrl={config.webhookUrl}
                                     primaryColor={ui.primaryColor}
+                                    accentColor={ui.accentColor}
                                     businessHours={businessHours}
                                     onSelect={(datetime) => onSend?.(datetime)}
                                 />
@@ -277,7 +280,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                                                 onClick={() => onSend?.(option)}
                                                 className="px-4 py-2 rounded-full border border-white/10 bg-white/5 text-zinc-200 text-sm font-medium transition-all shadow-lg flex items-center gap-2 hover:border-white/20 hover:bg-white/10"
                                             >
-                                                <div className="w-1.5 h-1.5 rounded-full bg-[#C6A87C]" aria-hidden></div>
+                                                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: config.ui.accentColor }} aria-hidden></div>
                                                 {option}
                                             </motion.button>
                                         ))}
@@ -297,7 +300,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             {/* Typing indicator while loading */}
             <AnimatePresence>
                 {isLoading && !isAnalyzing && (
-                    <TypingIndicator gradient={ui.gradient} />
+                    <TypingIndicator gradient={ui.gradient} accentColor={ui.accentColor} />
                 )}
             </AnimatePresence>
 
@@ -316,8 +319,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                         <motion.div
                             animate={{ y: ["-10%", "150%", "-10%"] }}
                             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                            className="absolute inset-x-0 h-12 bg-gradient-to-b from-transparent via-[#C6A87C]/10 to-transparent z-0"
-                            style={{ filter: "blur(8px)" }}
+                            className="absolute inset-x-0 h-12 z-0"
+                            style={{ filter: "blur(8px)", background: `linear-gradient(to bottom, transparent, ${config.ui.accentColor}1A, transparent)` }}
                             aria-hidden
                         />
 
@@ -326,19 +329,22 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                                 <motion.div
                                     animate={{ rotate: 360 }}
                                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                                    className="absolute inset-0 rounded-full border-2 border-white/5 border-t-[#C6A87C]"
+                                    className="absolute inset-0 rounded-full border-2 border-white/5"
+                                    style={{ borderTopColor: config.ui.accentColor }}
                                 />
                                 <motion.div
                                     animate={{ rotate: -360 }}
                                     transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                                    className="absolute inset-1 rounded-full border-2 border-white/5 border-l-[#C6A87C]/70"
+                                    className="absolute inset-1 rounded-full border-2 border-white/5"
+                                    style={{ borderLeftColor: config.ui.accentColor + 'B3' }}
                                 />
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <Bot size={22} className="text-[#C6A87C]" />
+                                    <Bot size={22} style={{ color: config.ui.accentColor }} />
                                     <motion.div
                                         animate={{ opacity: [0, 1, 0] }}
                                         transition={{ duration: 1.5, repeat: Infinity }}
-                                        className="absolute inset-0 rounded-full bg-[#C6A87C]/20"
+                                        className="absolute inset-0 rounded-full"
+                                        style={{ backgroundColor: config.ui.accentColor + '33' }}
                                     />
                                 </div>
                             </div>

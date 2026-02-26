@@ -152,6 +152,7 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                 clientId: effectiveClientId,
                 visitorId: effectiveVisitorId,
                 sessionId,
+                source: 'website',
                 url: typeof window !== 'undefined' ? window.location.href : '',
                 timestamp: new Date().toISOString(),
                 ...metadata

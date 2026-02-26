@@ -94,7 +94,7 @@ function App({ config, metadata, externalSessionId }: {
   }, [isOpen, launcherMessages.length]);
 
   return (
-    <div className="lexflow-engine font-sans selection:bg-[#C6A87C]/30 selection:text-white">
+    <div className="lexflow-engine font-sans selection:text-white" style={{ '--lexflow-accent': config.ui.accentColor } as React.CSSProperties}>
       {/* Launcher Button & Hook Messages */}
       <AnimatePresence>
         {!isOpen && (
@@ -119,14 +119,16 @@ function App({ config, metadata, externalSessionId }: {
               <motion.div
                 animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute inset-0 rounded-full bg-[#C6A87C] blur-md"
+                className="absolute inset-0 rounded-full blur-md"
+                style={{ backgroundColor: config.ui.accentColor }}
               />
 
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(true)}
-                className="relative w-16 h-16 rounded-full shadow-2xl shadow-[#C6A87C]/30 transition-all flex items-center justify-center group bg-zinc-900 border-2 border-white/10"
+                className="relative w-16 h-16 rounded-full shadow-2xl transition-all flex items-center justify-center group bg-zinc-900 border-2 border-white/10"
+                style={{ boxShadow: `0 25px 50px -12px ${config.ui.accentColor}4D` }}
                 aria-label="Abrir chat"
               >
                 <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center">
@@ -138,7 +140,7 @@ function App({ config, metadata, externalSessionId }: {
                     />
                   ) : (
                     <div className="flex items-center justify-center w-full h-full bg-zinc-800">
-                      <MessageCircle className="text-[#C6A87C]" size={28} />
+                      <MessageCircle style={{ color: config.ui.accentColor }} size={28} />
                     </div>
                   )}
                 </div>
@@ -153,7 +155,10 @@ function App({ config, metadata, externalSessionId }: {
                   1
                 </motion.span>
               </motion.button>
-              <div className="absolute inset-0 bg-[#C6A87C] blur-[20px] opacity-20 z-[-1] rounded-full animate-pulse pointer-events-none"></div>
+              <div 
+                className="absolute inset-0 blur-[20px] opacity-20 z-[-1] rounded-full animate-pulse pointer-events-none"
+                style={{ backgroundColor: config.ui.accentColor }}
+              ></div>
             </div>
           </div>
         )}
@@ -187,8 +192,8 @@ function App({ config, metadata, externalSessionId }: {
                     {config.ui.avatarUrl ? (
                       <img src={config.ui.avatarUrl} alt="Avatar del asistente" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-[#C6A87C]">
-                        <Bot size={24} />
+                      <div className="w-full h-full flex items-center justify-center bg-zinc-800">
+                        <Bot style={{ color: config.ui.accentColor }} size={24} />
                       </div>
                     )}
                   </div>
@@ -240,6 +245,7 @@ function App({ config, metadata, externalSessionId }: {
                 onSend={sendMessage}
                 isLoading={isLoading || isAnalyzing}
                 primaryColor={config.ui.primaryColor}
+                accentColor={config.ui.accentColor}
                 gradient={config.ui.gradient}
                 maxFileSizeMB={config.maxFileSizeMB}
                 featFiles={config.features.files}
