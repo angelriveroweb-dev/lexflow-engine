@@ -59,9 +59,11 @@ export class ConfigLoader {
                 .from('lexflow_configs')
                 .select('*')
                 .eq('client_id', id)
-                .single();
+                .order('updated_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
 
-            if (error) {
+            if (error || !data) {
                 console.warn(`LexFlow: Config for Client ID ${id} not found in lexflow_configs, falling back to mock.`, error);
                 return this.getMockConfig();
             }
