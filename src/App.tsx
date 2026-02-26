@@ -252,15 +252,15 @@ function App({ config, metadata, externalSessionId }: {
                 featVoice={config.features.voice}
               />
               <div className="mt-4 flex flex-col items-center gap-2">
-                <div className="flex items-center justify-center gap-2 opacity-30">
-                  <div className="h-[1px] w-8 bg-zinc-500"></div>
-                  <span className="text-[9px] text-zinc-400 font-bold tracking-[0.2em] uppercase">
+                <div className="flex items-center justify-center gap-2 opacity-30 w-full">
+                  <div className="h-[1px] flex-1 bg-zinc-500"></div>
+                  <span className="text-[9px] text-zinc-400 font-bold tracking-[0.2em] uppercase whitespace-nowrap">
                     {config.ui.footerText}
                   </span>
-                  <div className="h-[1px] w-8 bg-zinc-500"></div>
+                  <div className="h-[1px] flex-1 bg-zinc-500"></div>
                 </div>
                 <p className="text-[8px] text-zinc-600 font-medium tracking-widest uppercase">
-                  LexFlow Engine v1.3
+                  LexFlow Engine v1.4
                 </p>
                 <p className="text-[8px] text-zinc-500 font-black tracking-widest uppercase">
                   HECHO POR ANGEL DESIGN STUDIO
