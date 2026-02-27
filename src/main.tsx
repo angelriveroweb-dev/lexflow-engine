@@ -125,7 +125,8 @@ const init = async (options: LexFlowOptions) => {
 
   // In the render block, ensure we pass the correct IDs back to the App
   const finalMetadata = {
-    ...options.metadata,
+    ...config.settings, // Merge settings from Supabase first
+    ...options.metadata, // Manual metadata from init() has priority
     clientId: options.id,
     visitorId: (options.metadata?.visitorId && options.metadata.visitorId !== 'unknown') ? options.metadata.visitorId : visitorId,
     sessionId: sessionId

@@ -36,6 +36,7 @@ export interface LexFlowConfig {
     webhookUrl: string;
     maxFileSizeMB: number;
     calendarId?: string | null;
+    settings: Record<string, any>;
 }
 
 export class ConfigLoader {
@@ -106,7 +107,8 @@ export class ConfigLoader {
                 },
                 maxFileSizeMB: data.max_file_size_mb ?? 10,
                 webhookUrl: data.webhook_url || 'https://n8n.angelstudio.design/webhook/f93e0d29-7ccb-4a9f-aaa0-49d0c135df1c',
-                calendarId: data.calendar_id || null
+                calendarId: data.calendar_id || null,
+                settings: typeof data.settings === 'object' && data.settings !== null ? data.settings : {}
             };
         } catch (err) {
             console.error('LexFlow: Config load error', err);
@@ -137,7 +139,7 @@ export class ConfigLoader {
             },
             messages: {
                 welcome: 'Hola, soy Escobar & Asociados. ¿En qué asunto legal podemos asistirle hoy?',
-                suggestions: ['⚖️ Asesoría Divorcio', '👶 Pensión Alimenticia', '📅 Agendar Cita'],
+                suggestions: ['🛠️ Servicios', '📞 Contacto', '📋 Modalidades', '⚖️ ¿Me pueden ayudar con mi caso?'],
                 fallback: 'Lo siento, no pude procesar tu solicitud.'
             },
             features: {
@@ -152,7 +154,8 @@ export class ConfigLoader {
             },
             maxFileSizeMB: 10,
             webhookUrl: 'https://n8n.angelstudio.design/webhook/f93e0d29-7ccb-4a9f-aaa0-49d0c135df1c',
-            calendarId: null
+            calendarId: null,
+            settings: {}
         };
     }
 }
