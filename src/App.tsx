@@ -261,7 +261,7 @@ function App({ config, metadata, externalSessionId }: {
                   <div className="h-[1px] flex-1 bg-zinc-500"></div>
                 </div>
                 <p className="text-[8px] text-zinc-600 font-medium tracking-widest uppercase">
-                  LexFlow Engine v1.4
+                  LexFlow Engine v1.2.0
                 </p>
                 <p className="text-[8px] text-zinc-500 font-black tracking-widest uppercase">
                   HECHO POR ANGEL DESIGN STUDIO

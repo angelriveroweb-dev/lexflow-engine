@@ -2,7 +2,9 @@ const https = require('https');
 
 const urls = [
     'https://purge.jsdelivr.net/gh/angelriveroweb-dev/lexflow-engine@main/dist/lexflow.iife.js',
-    'https://purge.jsdelivr.net/gh/angelriveroweb-dev/lexflow-engine@main/dist/lexflow.css'
+    'https://purge.jsdelivr.net/gh/angelriveroweb-dev/lexflow-engine@main/dist/lexflow.css',
+    'https://purge.jsdelivr.net/gh/angelriveroweb-dev/lexflow-engine@1.2.0/dist/lexflow.iife.js',
+    'https://purge.jsdelivr.net/gh/angelriveroweb-dev/lexflow-engine@1.2.0/dist/lexflow.css'
 ];
 
 console.log('🚀 Iniciando purga de caché en jsDelivr...');

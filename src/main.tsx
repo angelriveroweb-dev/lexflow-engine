@@ -20,8 +20,10 @@ interface LexFlowOptions {
 }
 
 const init = async (options: LexFlowOptions) => {
-  const container = options.container || document.createElement('div');
-  if (!options.container) {
+  console.log('LexFlow Engine v1.2.0: Initializing...');
+  let container = options.container || document.getElementById('lexflow-root');
+  if (!container) {
+    container = document.createElement('div');
     container.id = 'lexflow-root';
     document.body.appendChild(container);
   }
