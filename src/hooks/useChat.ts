@@ -194,8 +194,13 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                     break;
                 } catch (err: any) {
                     if (err.name === 'AbortError') throw err;
+                    
+                    // Check if it's likely a client-side block (e.g. uBlock Origin)
+                    // In Chrome, ERR_BLOCKED_BY_CLIENT throws "TypeError: Failed to fetch"
+                    const isNetworkError = err.message === 'Failed to fetch' || err.message.includes('NetworkError');
+                    
                     if (attempt < MAX_RETRIES) {
-                        console.warn(`LexFlow: Request failed, retrying in ${RETRY_DELAY_MS}ms...`, err);
+                        console.warn(`LexFlow: Request failed (${isNetworkError ? 'network/blocked' : 'server'}), retrying in ${RETRY_DELAY_MS}ms...`);
                         await sleep(RETRY_DELAY_MS);
                         attempt++;
                     } else {
@@ -280,7 +285,14 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                 console.log('LexFlow: Request aborted by user');
                 return;
             }
-            console.error('LexFlow: Chat Error:', error);
+            
+            // Reduce console noise for client-side blocks
+            if (error.message === 'Failed to fetch' || (error.message && error.message.includes('NetworkError'))) {
+                console.warn('LexFlow: Network request blocked or failed (check adblockers/connection).', error);
+            } else {
+                console.error('LexFlow: Chat Error:', error);
+            }
+
             setMessages(prev => [...prev, {
                 id: generateUUID(),
                 text: config.messages.fallback || 'Lo siento, hubo un problema de conexión. Por favor, intenta de nuevo.',

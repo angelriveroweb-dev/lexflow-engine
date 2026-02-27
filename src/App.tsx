@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, MessageCircle, Trash2, ArrowLeft, Bot } from 'lucide-react'
 import { useChat } from './hooks/useChat'
@@ -27,6 +27,8 @@ function App({ config, metadata, externalSessionId }: {
   ]
 
   // Abandonment tracking — fixed: use Blob with JSON content-type so n8n parses it correctly
+  const lastAbandonmentSent = useRef<number>(0);
+
   useEffect(() => {
     if (!config.webhookUrl) {
       console.warn('LexFlow: No webhookUrl configured');
@@ -35,6 +37,13 @@ function App({ config, metadata, externalSessionId }: {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden' && sessionId) {
+        // Rate limit abandonment events (max 1 per 10 seconds) to avoid spamming/blocking
+        const now = Date.now();
+        if (now - lastAbandonmentSent.current < 10000) {
+          return;
+        }
+        lastAbandonmentSent.current = now;
+
         const effectiveClientId = metadata?.clientId || config.id;
         const effectiveVisitorId = getVisitorId();
 
@@ -54,16 +63,25 @@ function App({ config, metadata, externalSessionId }: {
         }));
 
         if (navigator.sendBeacon) {
-          // Send to main webhook (for context)
-          navigator.sendBeacon(config.webhookUrl, fd);
+          try {
+            // Send to main webhook (for context)
+            const sentMain = navigator.sendBeacon(config.webhookUrl, fd);
+            
+            // Send to El Rescatista (lead retention workflow)
+            const rescatistaUrl = config.webhookUrl.includes('/webhook/') 
+              ? config.webhookUrl.split('/webhook/')[0] + '/webhook/lead-abandonment'
+              : config.webhookUrl.replace(/\/webhook\/[^/]+$/, '/webhook/lead-abandonment');
+            
+            const sentRescatista = navigator.sendBeacon(rescatistaUrl, fd);
 
-          // Send to El Rescatista (lead retention workflow)
-          // More robust URL replacement to handle optional trailing slashes or /chat suffixes
-          const rescatistaUrl = config.webhookUrl.includes('/webhook/') 
-            ? config.webhookUrl.split('/webhook/')[0] + '/webhook/lead-abandonment'
-            : config.webhookUrl.replace(/\/webhook\/[^/]+$/, '/webhook/lead-abandonment');
-          
-          navigator.sendBeacon(rescatistaUrl, fd);
+            if (!sentMain || !sentRescatista) {
+               // Beacon queue full or failed silently
+               console.debug('LexFlow: Beacon queue full');
+            }
+          } catch (e) {
+            // Ignore blocked requests to avoid console noise
+            console.debug('LexFlow: Abandonment beacon blocked/failed', e);
+          }
         }
       }
     };
