@@ -245,17 +245,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                                 />
                             )}
 
-                            {/* Payment Card — shown when action is payment_inquiry AND there's a link */}
-                            {msg.sender === "bot" && msg.action === "payment_inquiry" && msg.paymentLink && (
+                            {/* Payment Card — shown when action is payment_inquiry/show_payment AND there's a link and price */}
+                            {msg.sender === "bot" && (msg.action === "payment_inquiry" || msg.action === "show_payment") && msg.paymentLink && msg.consultationPrice && (
                                 <PaymentCard
                                     paymentLink={msg.paymentLink}
-                                    paymentAmount={msg.paymentAmount}
+                                    paymentAmount={msg.paymentAmount || String(msg.consultationPrice)}
                                     primaryColor={ui.primaryColor}
                                 />
                             )}
 
-                            {/* Payment confirmed badge */}
-                            {msg.sender === "bot" && msg.leadStatus === "paid" && (
+                            {/* Payment confirmed badge - Now requires both isPaid AND lawyerConfirmed */}
+                            {msg.sender === "bot" && msg.isPaid && msg.lawyerConfirmed && (
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}

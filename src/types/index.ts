@@ -14,4 +14,7 @@ export interface Message {
     paymentLink?: string;
     paymentAmount?: string;
     leadStatus?: string;
+    isPaid?: boolean;
+    lawyerConfirmed?: boolean;
+    consultationPrice?: number | string;
 }

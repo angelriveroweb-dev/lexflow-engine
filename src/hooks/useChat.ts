@@ -212,6 +212,9 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
             let paymentLink: string | undefined;
             let paymentAmount: string | undefined;
             let leadStatus: string | undefined;
+            let isPaid: boolean | undefined;
+            let lawyerConfirmed: boolean | undefined;
+            let consultationPrice: number | string | undefined;
 
             if (typeof normalizedData === 'object' && normalizedData !== null) {
                 botText = normalizedData.text || normalizedData.output || normalizedData.message || '';
@@ -220,6 +223,9 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                 paymentLink = normalizedData.paymentLink || normalizedData.payment_link;
                 paymentAmount = normalizedData.paymentAmount || normalizedData.payment_amount;
                 leadStatus = normalizedData.leadStatus || normalizedData.lead_status;
+                isPaid = normalizedData.isPaid;
+                lawyerConfirmed = normalizedData.lawyerConfirmed || normalizedData.lawyer_confirmed;
+                consultationPrice = normalizedData.consultationPrice || normalizedData.consultation_price;
 
                 // Handle stringified JSON in text field (LLM sometimes wraps in ```json)
                 if (typeof botText === 'string' && (botText.trim().startsWith('{') || botText.trim().includes('```json'))) {
@@ -236,6 +242,11 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                         if (parsed.paymentLink || parsed.payment_link) paymentLink = parsed.paymentLink || parsed.payment_link;
                         if (parsed.paymentAmount || parsed.payment_amount) paymentAmount = parsed.paymentAmount || parsed.payment_amount;
                         if (parsed.leadStatus || parsed.lead_status) leadStatus = parsed.leadStatus || parsed.lead_status;
+                        if (parsed.isPaid !== undefined) isPaid = parsed.isPaid;
+                        if (parsed.lawyerConfirmed !== undefined || parsed.lawyer_confirmed !== undefined) 
+                            lawyerConfirmed = parsed.lawyerConfirmed || parsed.lawyer_confirmed;
+                        if (parsed.consultationPrice !== undefined || parsed.consultation_price !== undefined) 
+                            consultationPrice = parsed.consultationPrice || parsed.consultation_price;
                     } catch (parseErr) {
                         console.warn('LexFlow: Could not parse JSON in bot text', parseErr);
                     }
@@ -256,7 +267,10 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                 video: normalizedData?.video,
                 paymentLink,
                 paymentAmount,
-                leadStatus
+                leadStatus,
+                isPaid,
+                lawyerConfirmed,
+                consultationPrice
             };
 
             setMessages(prev => [...prev, botMsg]);
