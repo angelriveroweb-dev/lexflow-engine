@@ -58,11 +58,10 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
         } else {
             // Initial welcome message with generic legal fallbacks
             const legalFallbacks = [
-                '⚖️ Consultar Honorarios',
-                '📅 Agendar Cita',
-                '👨‍👩‍👧‍👦 Divorcio/Familia',
-                '🚗 Accidente de Tránsito',
-                '🏢 Sucesiones'
+                '🛠️ Servicios',
+                '📞 Contacto',
+                '📋 Modalidades',
+                '⚖️ ¿Me pueden ayudar con mi caso?'
             ];
 
             setMessages([{
