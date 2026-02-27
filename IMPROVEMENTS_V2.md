@@ -236,6 +236,7 @@ Recibirás un recordatorio 24 horas antes.
 | Intención | Palabras Clave | Acción |
 |-----------|---|---|
 | **schedule_appointment** | agendar, cita, consulta, horario, disponible, cuándo, fecha, reservar | Ejecutar subworkflow Agendar |
+| **schedule_processing** | - (Interno) | Ocultar UI de calendario mientras se procesa la disponibilidad |
 | **payment_inquiry** | precio, costo, cuánto, tarifa, pagar, pago, valor | Ejecutar subworkflow Cobros |
 | **general_inquiry** | leyes, derechos, proceso, consulta legal, abogado, ayuda | Responder con IA + RAG |
 
