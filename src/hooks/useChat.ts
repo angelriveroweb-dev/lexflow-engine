@@ -56,13 +56,29 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                 console.error('LexFlow: Failed to parse history', e);
             }
         } else {
+            // Initial welcome message with generic legal fallbacks
+            const legalFallbacks = [
+                '⚖️ Consultar Honorarios',
+                '📅 Agendar Cita',
+                '👨‍👩‍👧‍👦 Divorcio/Familia',
+                '🚗 Accidente de Tránsito',
+                '🏢 Sucesiones'
+            ];
+
             setMessages([{
                 id: 'welcome',
                 text: config.messages.welcome,
                 sender: 'bot',
                 timestamp: new Date(),
-                options: config.messages.suggestions || []
+                options: (config.messages.suggestions && config.messages.suggestions.length > 0) 
+                    ? config.messages.suggestions 
+                    : legalFallbacks
             }]);
+
+            // Optional: Request AI to provide dynamic suggestions based on RAG
+            // We do this by sending a silent system message if supported by the webhook
+            // or just letting the first message handle it. 
+            // For now, if no suggestions in config, we could trigger a "start" event
         }
     }, [sessionId, config]);
 

@@ -26,7 +26,11 @@
         window.addEventListener('load', () => {
             if (window.LexFlow) {
                 window.LexFlow.init({
-                    id: 'demo'
+                    id: 'demo',
+                    ui: {
+                        accentColor: '#FF0000', // Rojo para probar override
+                        title: 'LexFlow Custom Color'
+                    }
                 });
             }
         });

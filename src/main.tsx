@@ -15,6 +15,8 @@ interface LexFlowOptions {
   metadata?: Record<string, any>;
   webhookUrl?: string;
   sessionId?: string;
+  ui?: Partial<LexFlowConfig['ui']>;
+  messages?: Partial<LexFlowConfig['messages']>;
 }
 
 const init = async (options: LexFlowOptions) => {
@@ -109,6 +111,14 @@ const init = async (options: LexFlowOptions) => {
 
   if (options.webhookUrl) {
     config.webhookUrl = options.webhookUrl;
+  }
+
+  // Allow UI and Messages overrides from init options
+  if (options.ui) {
+    config.ui = { ...config.ui, ...options.ui };
+  }
+  if (options.messages) {
+    config.messages = { ...config.messages, ...options.messages };
   }
 
   // In the render block, ensure we pass the correct IDs back to the App
