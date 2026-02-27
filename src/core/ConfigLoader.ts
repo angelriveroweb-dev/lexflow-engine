@@ -91,7 +91,9 @@ export class ConfigLoader {
                     footerText: data.footer_text || 'Secretaría Ejecutiva | Respuesta Inmediata'
                 },
                 messages: {
-                    welcome: data.msg_welcome,
+                    welcome: (data.msg_welcome || `Hola, soy {{bot_name}}. ¿En qué puedo ayudarte hoy?`)
+                        .replace(/{{bot_name}}/gi, data.bot_name || 'tu asistente')
+                        .replace(/{{ui_title}}/gi, data.ui_title || 'Asistente'),
                     suggestions: Array.isArray(data.msg_suggestions) ? data.msg_suggestions : [],
                     fallback: data.msg_fallback || 'Lo siento, no pude procesar tu solicitud.'
                 },
@@ -138,7 +140,7 @@ export class ConfigLoader {
                 footerText: 'Secretaría Ejecutiva | Respuesta Inmediata'
             },
             messages: {
-                welcome: 'Hola, soy Escobar & Asociados. ¿En qué asunto legal podemos asistirle hoy?',
+                welcome: 'Hola, soy LexFlow Demo. ¿En qué asunto legal podemos asistirle hoy?',
                 suggestions: ['🛠️ Servicios', '📞 Contacto', '📋 Modalidades', '⚖️ ¿Me pueden ayudar con mi caso?'],
                 fallback: 'Lo siento, no pude procesar tu solicitud.'
             },
