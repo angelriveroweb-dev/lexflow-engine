@@ -38,31 +38,32 @@ function App({ config, metadata, externalSessionId }: {
         const effectiveClientId = metadata?.clientId || config.id;
         const effectiveVisitorId = getVisitorId();
 
-        const data = {
-          sessionId,
-          text: '[User left page]',
+        // Use FormData for consistency with useChat and to avoid CORS preflight issues
+        const fd = new FormData();
+        fd.append('sessionId', sessionId);
+        fd.append('text', '[Abandono de Página]');
+        fd.append('clientId', effectiveClientId);
+        fd.append('visitorId', effectiveVisitorId);
+        fd.append('action', 'user_abandoned_page');
+        fd.append('metadata', JSON.stringify({
           clientId: effectiveClientId,
           visitorId: effectiveVisitorId,
-          action: 'user_abandoned_page',
-          metadata: {
-            clientId: effectiveClientId,
-            visitorId: effectiveVisitorId,
-            url: window.location.href,
-            timestamp: new Date().toISOString(),
-            ...metadata
-          }
-        };
+          url: window.location.href,
+          timestamp: new Date().toISOString(),
+          ...metadata
+        }));
 
         if (navigator.sendBeacon) {
-          // Use Blob with application/json so the webhook receives properly parsed JSON
-          const payload = new Blob([JSON.stringify(data)], { type: 'application/json' });
-
           // Send to main webhook (for context)
-          navigator.sendBeacon(config.webhookUrl, payload);
+          navigator.sendBeacon(config.webhookUrl, fd);
 
           // Send to El Rescatista (lead retention workflow)
-          const rescatistaUrl = config.webhookUrl.replace(/\/webhook\/[^/]+$/, '/webhook/lead-abandonment');
-          navigator.sendBeacon(rescatistaUrl, payload);
+          // More robust URL replacement to handle optional trailing slashes or /chat suffixes
+          const rescatistaUrl = config.webhookUrl.includes('/webhook/') 
+            ? config.webhookUrl.split('/webhook/')[0] + '/webhook/lead-abandonment'
+            : config.webhookUrl.replace(/\/webhook\/[^/]+$/, '/webhook/lead-abandonment');
+          
+          navigator.sendBeacon(rescatistaUrl, fd);
         }
       }
     };

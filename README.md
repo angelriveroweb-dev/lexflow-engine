@@ -160,7 +160,23 @@ import 'https://cdn.jsdelivr.net/gh/angelriveroweb-dev/lexflow-engine@main/dist/
 
 ---
 
-## � Troubleshooting & Tips
+## 🛠️ Desarrollo y Despliegue
+
+### 1. Actualización del CDN
+Para que los cambios se reflejen instantáneamente en todos los sitios de los clientes (evitando la caché de 24hs de jsDelivr), sigue este flujo:
+
+1. Realiza tus cambios y haz el build: `npm run build`
+2. Haz push a la rama `main`: `git push origin main`
+3. **Limpia la caché del CDN**:
+   ```bash
+   npm run clear-cache
+   ```
+
+Este comando utiliza la Purge API de jsDelivr para invalidar los archivos en la rama `@main` de forma inmediata.
+
+---
+
+## 🛠️ Troubleshooting & Tips
 
 ### 1. El widget no aparece
 *   **Caché de JSDelivr:** Si acabas de hacer un push, JSDelivr puede tardar en actualizar. Prueba forzar la actualización usando un parámetro: `...lexflow.iife.js?v=refresh`.
@@ -179,4 +195,3 @@ Al usar el CDN en un proyecto Vite, a veces los imports de CSS vía URL pueden f
 ```
 
 ---
-

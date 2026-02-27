@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clear-cache": "node scripts/purge-cdn.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",
