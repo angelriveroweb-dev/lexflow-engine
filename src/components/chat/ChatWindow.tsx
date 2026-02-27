@@ -268,7 +268,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
                             {/* Suggestion buttons */}
                             {msg.sender === "bot" && msg.options && msg.options.length > 0 &&
-                                msg.action !== "schedule_appointment" && (
+                                msg.action !== "schedule_appointment" && msg.action !== "schedule_processing" && (
                                     <div className="mt-3 flex flex-wrap gap-2 justify-start items-center" role="group" aria-label="Opciones rápidas">
                                         {msg.options.map((option, idx) => (
                                             <motion.button
