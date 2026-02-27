@@ -35,6 +35,7 @@ export interface LexFlowConfig {
     businessHours: BusinessHours;
     webhookUrl: string;
     maxFileSizeMB: number;
+    calendarId?: string | null;
 }
 
 export class ConfigLoader {
@@ -104,7 +105,8 @@ export class ConfigLoader {
                     days: Array.isArray(data.business_days) ? data.business_days : [1, 2, 3, 4, 5]
                 },
                 maxFileSizeMB: data.max_file_size_mb ?? 10,
-                webhookUrl: data.webhook_url || 'https://n8n.angelstudio.design/webhook/f93e0d29-7ccb-4a9f-aaa0-49d0c135df1c'
+                webhookUrl: data.webhook_url || 'https://n8n.angelstudio.design/webhook/f93e0d29-7ccb-4a9f-aaa0-49d0c135df1c',
+                calendarId: data.calendar_id || null
             };
         } catch (err) {
             console.error('LexFlow: Config load error', err);
@@ -149,7 +151,8 @@ export class ConfigLoader {
                 days: [1, 2, 3, 4, 5]
             },
             maxFileSizeMB: 10,
-            webhookUrl: 'https://n8n.angelstudio.design/webhook/f93e0d29-7ccb-4a9f-aaa0-49d0c135df1c'
+            webhookUrl: 'https://n8n.angelstudio.design/webhook/f93e0d29-7ccb-4a9f-aaa0-49d0c135df1c',
+            calendarId: null
         };
     }
 }

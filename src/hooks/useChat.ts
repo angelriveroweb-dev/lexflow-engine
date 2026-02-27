@@ -155,6 +155,7 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                 source: 'website',
                 url: typeof window !== 'undefined' ? window.location.href : '',
                 timestamp: new Date().toISOString(),
+                calendarId: config.calendarId,
                 ...metadata
             }));
             if (file) {
