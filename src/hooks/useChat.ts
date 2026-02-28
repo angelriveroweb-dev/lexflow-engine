@@ -234,6 +234,11 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                 consultationPrice = normalizedData.consultationPrice || normalizedData.consultation_price;
                 showPaymentCard = normalizedData.showPaymentCard || normalizedData.show_payment_card;
 
+                // HEURISTIC: If text contains payment keywords and we have a link, force showPaymentCard
+                if (!showPaymentCard && paymentLink && (botText.includes('pago') || botText.includes('transferencia') || botText.includes('comprobante'))) {
+                    showPaymentCard = true;
+                }
+
                 // Handle stringified JSON in text field (LLM sometimes wraps in ```json)
                 if (typeof botText === 'string' && (botText.trim().startsWith('{') || botText.trim().includes('```json'))) {
                     try {
@@ -256,6 +261,11 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                             consultationPrice = parsed.consultationPrice || parsed.consultation_price;
                         if (parsed.showPaymentCard !== undefined || parsed.show_payment_card !== undefined) 
                             showPaymentCard = parsed.showPaymentCard || parsed.show_payment_card;
+                        
+                        // HEURISTIC: If text contains payment keywords and we have a link, force showPaymentCard
+                        if (!showPaymentCard && paymentLink && (botText.includes('pago') || botText.includes('transferencia') || botText.includes('comprobante'))) {
+                            showPaymentCard = true;
+                        }
                     } catch (parseErr) {
                         console.warn('LexFlow: Could not parse JSON in bot text', parseErr);
                     }
@@ -268,6 +278,11 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                         // Extract other fields if present in this raw JSON
                         if (parsed.action) action = parsed.action;
                         if (parsed.paymentLink) paymentLink = parsed.paymentLink;
+                        
+                        // HEURISTIC: If text contains payment keywords and we have a link, force showPaymentCard
+                        if (!showPaymentCard && paymentLink && (botText.includes('pago') || botText.includes('transferencia') || botText.includes('comprobante'))) {
+                            showPaymentCard = true;
+                        }
                      } catch (e) {
                         // Ignore if not valid JSON
                      }
