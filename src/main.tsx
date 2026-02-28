@@ -17,6 +17,7 @@ interface LexFlowOptions {
   sessionId?: string;
   ui?: Partial<LexFlowConfig['ui']>;
   messages?: Partial<LexFlowConfig['messages']>;
+  defaultOpen?: boolean;
 }
 
 const init = async (options: LexFlowOptions) => {
@@ -160,6 +161,7 @@ const init = async (options: LexFlowOptions) => {
         config={config}
         metadata={finalMetadata}
         externalSessionId={sessionId!}
+        defaultOpen={options.defaultOpen}
       />
     </React.StrictMode>
   );

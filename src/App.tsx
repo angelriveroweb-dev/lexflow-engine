@@ -7,12 +7,13 @@ import { ChatInput } from './components/chat/ChatInput'
 import { getVisitorId } from './lib/utils'
 import type { LexFlowConfig } from './core/ConfigLoader'
 
-function App({ config, metadata, externalSessionId }: {
+function App({ config, metadata, externalSessionId, defaultOpen }: {
   config: LexFlowConfig,
   metadata?: Record<string, any>,
-  externalSessionId?: string
+  externalSessionId?: string,
+  defaultOpen?: boolean
 }) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(defaultOpen || false)
   const { messages, isLoading, isAnalyzing, sendMessage, sessionId, clearHistory, abortRequest } = useChat({
     config,
     metadata,
