@@ -2,7 +2,7 @@
 
 ## 🚀 Overview
 
-El chatbot "Recepcionista AI v1.2 [DEV]" está disponible via **jsDelivr CDN** y se integra con n8n para orquestar:
+El chatbot "Recepcionista AI v1.3 [DEV]" está disponible via **Netlify CDN** y se integra con n8n para orquestar:
 - **Consultas generales** (con IA + Knowledge Base RAG)
 - **Agendar citas** (Google Calendar)
 - **Consultas sobre cobro** (MercadoPago link)
@@ -11,10 +11,10 @@ El chatbot "Recepcionista AI v1.2 [DEV]" está disponible via **jsDelivr CDN** y
 
 ## 📋 Parámetros de Landing Pages
 
-### URL de Integración (jsDelivr)
+### URL de Integración (Netlify)
 
 ```
-https://cdn.jsdelivr.net/gh/usuario/lexflow-engine/dist/chatbot.js
+https://lexflow-engine.netlify.app/lexflow.iife.js
 ```
 
 ### Parámetros por Query String
@@ -147,7 +147,7 @@ Para que el chatbot funcione correctamente, el cliente debe configurar en su pan
         webhookUrl: 'https://n8n-instance.com/webhook/chat'
       };
     </script>
-    <script src="https://cdn.jsdelivr.net/gh/usuario/lexflow-engine/dist/chatbot.js"></script>
+    <script src="https://lexflow-engine.netlify.app/lexflow.iife.js"></script>
   </body>
 </html>
 ```
@@ -237,6 +237,6 @@ Para dudas sobre integración:
 
 ---
 
-**Última actualización**: 23/02/2026
-**Versión**: 1.2
-**Estado**: ✅ Production Ready (DEV branch para testing)
+**Última actualización**: 28/02/2026
+**Versión**: 1.3.2
+**Estado**: ✅ Production Ready (Netlify CDN)

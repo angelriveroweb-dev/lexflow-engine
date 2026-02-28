@@ -43,59 +43,64 @@ const PaymentCard: React.FC<{
     paymentLink: string;
     paymentAmount?: string;
     primaryColor: string;
-}> = ({ paymentLink, paymentAmount, primaryColor }) => (
-    <motion.div
-        initial={{ opacity: 0, y: 8, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        className="mt-3 bg-zinc-900/80 border border-white/10 rounded-2xl overflow-hidden shadow-xl w-full max-w-sm"
-    >
-        <div className="p-1" style={{ background: `linear-gradient(135deg, ${primaryColor}22, transparent)` }}>
-            <div className="p-4 space-y-3">
-                <div className="flex items-center gap-3">
-                    <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: primaryColor + '22', border: `1px solid ${primaryColor}44` }}
+}> = ({ paymentLink, paymentAmount, primaryColor }) => {
+    const formattedAmount = paymentAmount ? (
+        paymentAmount.includes('$') ? paymentAmount : `$${Number(paymentAmount).toLocaleString('es-MX')} MXN`
+    ) : null;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="mt-3 bg-zinc-900/80 border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl w-full max-w-sm"
+        >
+            <div className="p-1" style={{ background: `linear-gradient(135deg, ${primaryColor}33, transparent)` }}>
+                <div className="p-6 space-y-4">
+                    <div className="flex items-center gap-4">
+                        <div
+                            className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"
+                            style={{ backgroundColor: primaryColor + '22', border: `1px solid ${primaryColor}44` }}
+                        >
+                            <CreditCard size={22} style={{ color: primaryColor }} />
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Honorarios de consulta</p>
+                            {formattedAmount && (
+                                <p className="text-2xl font-black text-white leading-tight">{formattedAmount}</p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="space-y-2 text-[11px] text-zinc-400 font-medium">
+                        <div className="flex items-center gap-2">
+                            <CheckCircle size={14} className="text-emerald-500 shrink-0" />
+                            <span>Pago seguro vía MercadoPago</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <CheckCircle size={14} className="text-emerald-500 shrink-0" />
+                            <span>Confirmación inmediata por WhatsApp</span>
+                        </div>
+                    </div>
+
+                    <a
+                        href={paymentLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-sm font-black text-white transition-all hover:brightness-110 hover:scale-[1.02] active:scale-95 shadow-[0_10px_20px_-5px_rgba(0,0,0,0.3)]"
+                        style={{ backgroundColor: primaryColor }}
                     >
-                        <CreditCard size={18} style={{ color: primaryColor }} />
-                    </div>
-                    <div>
-                        <p className="text-xs font-bold text-white tracking-tight">Pago de Consulta</p>
-                        {paymentAmount && (
-                            <p className="text-lg font-black text-white leading-tight">{paymentAmount}</p>
-                        )}
-                    </div>
-                </div>
+                        💳 Ir al link de pago
+                        <ExternalLink size={16} />
+                    </a>
 
-                <div className="space-y-1.5 text-[11px] text-zinc-400">
-                    <div className="flex items-center gap-2">
-                        <CheckCircle size={12} className="text-emerald-500 shrink-0" />
-                        <span>Pago seguro vía MercadoPago</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <CheckCircle size={12} className="text-emerald-500 shrink-0" />
-                        <span>Confirmación inmediata por WhatsApp</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <CheckCircle size={12} className="text-emerald-500 shrink-0" />
-                        <span>Acceso para agendar cita después del pago</span>
-                    </div>
+                    <p className="text-[10px] text-center text-zinc-500 font-bold uppercase tracking-tighter">
+                        Protegido por encriptación de 256 bits
+                    </p>
                 </div>
-
-                <a
-                    href={paymentLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110 hover:scale-[1.02] active:scale-95 shadow-lg"
-                    style={{ backgroundColor: primaryColor }}
-                    aria-label={`Pagar consulta${paymentAmount ? ' - ' + paymentAmount : ''} en MercadoPago`}
-                >
-                    Pagar ahora
-                    <ExternalLink size={14} />
-                </a>
             </div>
-        </div>
-    </motion.div>
-);
+        </motion.div>
+    );
+};
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({
     messages,
@@ -109,6 +114,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     const bottomRef = useRef<HTMLDivElement>(null);
     const { speak, isSpeaking, stopSpeaking } = useSpeech();
     const { ui, businessHours } = config;
+    const firstPaymentCardId = messages.find(m => m.sender === "bot" && m.showPaymentCard && m.paymentLink)?.id;
+
+    const lastScheduleMessageId = [...messages].reverse().find(m => m.sender === "bot" && m.action === "schedule_appointment")?.id;
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -187,10 +195,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                                                         {...props}
                                                     />
                                                 ),
-                                                code: ({ node, inline, ...props }: any) =>
-                                                    inline
-                                                        ? <code className="bg-zinc-900 border border-white/10 px-1 py-0.5 rounded text-emerald-400 font-mono text-[11px]" {...props} />
-                                                        : <pre className="bg-zinc-900 border border-white/10 p-3 rounded-lg overflow-x-auto text-[11px] font-mono text-zinc-300 my-3"><code {...props} /></pre>
+                                                code: ({ node, inline, className, children, ...props }: any) => {
+                                                    const match = /language-(\w+)/.exec(className || '');
+                                                    const isJson = match && match[1] === 'json';
+                                                    if (!inline && isJson) {
+                                                        return (
+                                                            <details className="bg-zinc-900/50 border border-white/10 rounded-lg my-3 overflow-hidden group">
+                                                                <summary className="text-[10px] uppercase font-bold text-zinc-500 p-2.5 cursor-pointer hover:bg-white/5 transition-colors select-none flex items-center gap-2">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 group-open:bg-emerald-500 transition-colors"></div>
+                                                                    Ver Metadatos / JSON
+                                                                </summary>
+                                                                <pre className="p-3 overflow-x-auto text-[11px] font-mono text-zinc-400 border-t border-white/5 bg-zinc-950/50">
+                                                                    <code className={className} {...props}>
+                                                                        {children}
+                                                                    </code>
+                                                                </pre>
+                                                            </details>
+                                                        );
+                                                    }
+                                                    return inline
+                                                        ? <code className="bg-zinc-900 border border-white/10 px-1 py-0.5 rounded text-emerald-400 font-mono text-[11px]" {...props}>{children}</code>
+                                                        : <pre className="bg-zinc-900 border border-white/10 p-3 rounded-lg overflow-x-auto text-[11px] font-mono text-zinc-300 my-3"><code className={className} {...props}>{children}</code></pre>
+                                                }
                                             }}
                                         >
                                             {msg.text.replace(/\\\*/g, '*').replace(/\\_/g, '_')}
@@ -234,7 +260,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                             </div>
 
                             {/* Calendar Booking widget */}
-                            {msg.sender === "bot" && msg.action === "schedule_appointment" && (
+                            {msg.sender === "bot" && msg.action === "schedule_appointment" && msg.id === lastScheduleMessageId && (
                                 <CalendarBooking
                                     sessionId={sessionId}
                                     webhookUrl={config.webhookUrl}
@@ -245,13 +271,37 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                                 />
                             )}
 
-                            {/* Payment Card — shown when action is payment_inquiry/show_payment AND there's a link and price */}
-                            {msg.sender === "bot" && (msg.action === "payment_inquiry" || msg.action === "show_payment") && msg.paymentLink && msg.consultationPrice && (
-                                <PaymentCard
-                                    paymentLink={msg.paymentLink}
-                                    paymentAmount={msg.paymentAmount || String(msg.consultationPrice)}
-                                    primaryColor={ui.primaryColor}
-                                />
+                            {/* Payment Card — shown when showPaymentCard is true */}
+                            {msg.sender === "bot" && msg.showPaymentCard && msg.paymentLink && msg.id === firstPaymentCardId && (
+                                <div id={`payment-card-${msg.id}`}>
+                                    <PaymentCard
+                                        paymentLink={msg.paymentLink}
+                                        paymentAmount={msg.paymentAmount || String(msg.consultationPrice)}
+                                        primaryColor={ui.primaryColor}
+                                    />
+                                </div>
+                            )}
+
+                            {/* Subsequent Payment Card — show inline text with scroll-to-payment button */}
+                            {msg.sender === "bot" && msg.showPaymentCard && msg.paymentLink && msg.id !== firstPaymentCardId && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mt-3 p-4 bg-zinc-900/50 border border-white/5 rounded-2xl flex items-center justify-between gap-4 w-full max-w-sm"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+                                            <CreditCard size={14} className="text-zinc-400" />
+                                        </div>
+                                        <p className="text-xs text-zinc-400 font-medium">Ya te compartimos el link de pago arriba 👆</p>
+                                    </div>
+                                    <button
+                                        onClick={() => document.getElementById(`payment-card-${firstPaymentCardId}`)?.scrollIntoView({ behavior: 'smooth' })}
+                                        className="text-[10px] font-black uppercase tracking-widest text-white px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-all active:scale-95 border border-white/5"
+                                    >
+                                        Ver link
+                                    </button>
+                                </motion.div>
                             )}
 
                             {/* Payment confirmed badge - Now requires both isPaid AND lawyerConfirmed */}

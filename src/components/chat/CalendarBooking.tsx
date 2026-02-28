@@ -153,6 +153,7 @@ export const CalendarBooking: React.FC<CalendarBookingProps> = ({
                 </div>
                 <h3 className="text-emerald-500 font-bold">¡Solicitud Enviada!</h3>
                 <p className="text-xs text-emerald-500/80">Recibirás una confirmación por correo o WhatsApp en breve.</p>
+                <button onClick={() => setIsConfirmed(false)} className="mt-4 px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 rounded-xl text-xs font-bold transition-all border border-emerald-500/20">Modificar Fecha/Hora</button>
             </motion.div>
         );
     }

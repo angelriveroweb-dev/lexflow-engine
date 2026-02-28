@@ -17,4 +17,5 @@ export interface Message {
     isPaid?: boolean;
     lawyerConfirmed?: boolean;
     consultationPrice?: number | string;
+    showPaymentCard?: boolean;
 }

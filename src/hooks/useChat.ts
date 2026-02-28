@@ -220,6 +220,7 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
             let isPaid: boolean | undefined;
             let lawyerConfirmed: boolean | undefined;
             let consultationPrice: number | string | undefined;
+            let showPaymentCard: boolean | undefined;
 
             if (typeof normalizedData === 'object' && normalizedData !== null) {
                 botText = normalizedData.text || normalizedData.output || normalizedData.message || '';
@@ -231,6 +232,7 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                 isPaid = normalizedData.isPaid;
                 lawyerConfirmed = normalizedData.lawyerConfirmed || normalizedData.lawyer_confirmed;
                 consultationPrice = normalizedData.consultationPrice || normalizedData.consultation_price;
+                showPaymentCard = normalizedData.showPaymentCard || normalizedData.show_payment_card;
 
                 // Handle stringified JSON in text field (LLM sometimes wraps in ```json)
                 if (typeof botText === 'string' && (botText.trim().startsWith('{') || botText.trim().includes('```json'))) {
@@ -252,6 +254,8 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                             lawyerConfirmed = parsed.lawyerConfirmed || parsed.lawyer_confirmed;
                         if (parsed.consultationPrice !== undefined || parsed.consultation_price !== undefined) 
                             consultationPrice = parsed.consultationPrice || parsed.consultation_price;
+                        if (parsed.showPaymentCard !== undefined || parsed.show_payment_card !== undefined) 
+                            showPaymentCard = parsed.showPaymentCard || parsed.show_payment_card;
                     } catch (parseErr) {
                         console.warn('LexFlow: Could not parse JSON in bot text', parseErr);
                     }
@@ -287,7 +291,8 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                 leadStatus,
                 isPaid,
                 lawyerConfirmed,
-                consultationPrice
+                consultationPrice,
+                showPaymentCard
             };
 
             setMessages(prev => [...prev, botMsg]);

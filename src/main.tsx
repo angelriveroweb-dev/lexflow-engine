@@ -28,7 +28,7 @@ const init = async (options: LexFlowOptions) => {
   }
   (window as any)._lexflow_initialized = true;
 
-  console.log('LexFlow Engine v1.2.0: Initializing...');
+  console.log('LexFlow Engine v1.3.2: Initializing...');
   let container = options.container || document.getElementById('lexflow-root');
   if (!container) {
     container = document.createElement('div');
@@ -137,7 +137,7 @@ const init = async (options: LexFlowOptions) => {
   }
 
   const saasName = globalConfig?.saasName || 'LexFlow Engine';
-  const version = globalConfig?.version || 'v1.2.0';
+  const version = globalConfig?.version || 'v1.3.2';
 
   console.log(`${saasName} ${version}: Initialized`);
 
