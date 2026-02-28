@@ -7,11 +7,13 @@ import { ChatInput } from './components/chat/ChatInput'
 import { getVisitorId } from './lib/utils'
 import type { LexFlowConfig } from './core/ConfigLoader'
 
-function App({ config, metadata, externalSessionId, defaultOpen }: {
+function App({ config, metadata, externalSessionId, defaultOpen, saasName, version }: {
   config: LexFlowConfig,
   metadata?: Record<string, any>,
   externalSessionId?: string,
-  defaultOpen?: boolean
+  defaultOpen?: boolean,
+  saasName?: string,
+  version?: string
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen || false)
   const { messages, isLoading, isAnalyzing, sendMessage, sessionId, clearHistory, abortRequest } = useChat({
@@ -280,7 +282,7 @@ function App({ config, metadata, externalSessionId, defaultOpen }: {
                   <div className="h-[1px] flex-1 bg-zinc-500"></div>
                 </div>
                 <p className="text-[8px] text-zinc-600 font-medium tracking-widest uppercase">
-                  LexFlow Engine v1.2.0
+                  {saasName || 'LexFlow Engine'} {version || 'v1.2.0'}
                 </p>
                 <p className="text-[8px] text-zinc-500 font-black tracking-widest uppercase">
                   HECHO POR ANGEL DESIGN STUDIO

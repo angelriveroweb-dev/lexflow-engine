@@ -126,12 +126,20 @@ const init = async (options: LexFlowOptions) => {
 
 
   const loader = new ConfigLoader(supabaseUrl, supabaseKey);
-  const config = await loader.fetchConfig(options.id);
+  const [config, globalConfig] = await Promise.all([
+    loader.fetchConfig(options.id),
+    loader.fetchGlobalConfig()
+  ]);
 
   if (!config) {
     console.error('LexFlow: Failed to load configuration for ID:', options.id);
     return;
   }
+
+  const saasName = globalConfig?.saasName || 'LexFlow Engine';
+  const version = globalConfig?.version || 'v1.2.0';
+
+  console.log(`${saasName} ${version}: Initialized`);
 
   if (options.webhookUrl) {
     config.webhookUrl = options.webhookUrl;
@@ -162,6 +170,8 @@ const init = async (options: LexFlowOptions) => {
         metadata={finalMetadata}
         externalSessionId={sessionId!}
         defaultOpen={options.defaultOpen}
+        saasName={saasName}
+        version={version}
       />
     </React.StrictMode>
   );

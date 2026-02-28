@@ -48,6 +48,29 @@ export class ConfigLoader {
         this.supabaseKey = key;
     }
 
+    async fetchGlobalConfig(): Promise<{ saasName: string; version: string } | null> {
+        if (!this.supabaseUrl || !this.supabaseKey) return null;
+
+        try {
+            const supabase = createSupabaseClient(this.supabaseUrl, this.supabaseKey);
+            const { data, error } = await supabase
+                .from('saas_global_config')
+                .select('saas_name, current_version')
+                .limit(1)
+                .maybeSingle();
+
+            if (error || !data) return null;
+
+            return {
+                saasName: data.saas_name || 'LexFlow AI',
+                version: data.current_version || '1.2.0'
+            };
+        } catch (err) {
+            console.error('LexFlow: Global config load error', err);
+            return null;
+        }
+    }
+
     async fetchConfig(id: string): Promise<LexFlowConfig | null> {
         // Mocking for development purposes if the ID is 'demo'
         if (id === 'demo' || !this.supabaseUrl || !this.supabaseKey) {

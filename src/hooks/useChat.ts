@@ -255,6 +255,18 @@ export const useChat = ({ config, metadata, externalSessionId }: UseChatProps) =
                     } catch (parseErr) {
                         console.warn('LexFlow: Could not parse JSON in bot text', parseErr);
                     }
+                } else if (typeof botText === 'string' && botText.trim().startsWith('{') && botText.includes('"text":')) {
+                     // Fallback for raw JSON string without markdown code blocks
+                     try {
+                        const parsed = JSON.parse(botText);
+                        if (parsed.text) botText = parsed.text;
+                        if (parsed.suggestions) suggestions = parsed.suggestions;
+                        // Extract other fields if present in this raw JSON
+                        if (parsed.action) action = parsed.action;
+                        if (parsed.paymentLink) paymentLink = parsed.paymentLink;
+                     } catch (e) {
+                        // Ignore if not valid JSON
+                     }
                 }
             } else {
                 botText = String(normalizedData);
