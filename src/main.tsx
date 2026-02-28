@@ -20,6 +20,13 @@ interface LexFlowOptions {
 }
 
 const init = async (options: LexFlowOptions) => {
+  // Prevent multiple initializations on the same page load
+  if ((window as any)._lexflow_initialized) {
+    console.warn('LexFlow: Already initialized, skipping duplicate call.');
+    return;
+  }
+  (window as any)._lexflow_initialized = true;
+
   console.log('LexFlow Engine v1.2.0: Initializing...');
   let container = options.container || document.getElementById('lexflow-root');
   if (!container) {
@@ -89,13 +96,27 @@ const init = async (options: LexFlowOptions) => {
         });
       }
 
-      // 2. Page View (Mandatory on every init)
-      supabase.from('analytics_events').insert({
-        ...basePayload,
-        event_type: 'page_view',
-      }).then(({ error }) => {
-        if (error) console.error('LexFlow: Page tracking error', error);
-      });
+      // 2. Page View (Deduplicated)
+      const lastTrackedUrl = localStorage.getItem('last_tracked_url');
+      const lastTrackedTime = localStorage.getItem('last_tracked_time');
+      const currentUrl = window.location.href;
+      const timeSinceLastTrack = lastTrackedTime ? now - parseInt(lastTrackedTime) : Infinity;
+
+      // Only track if URL changed OR it's been > 30 seconds OR it's a new session
+      if (isNewSession || currentUrl !== lastTrackedUrl || timeSinceLastTrack > 30000) {
+        supabase.from('analytics_events').insert({
+          ...basePayload,
+          event_type: 'page_view',
+        }).then(({ error }) => {
+          if (error) console.error('LexFlow: Page tracking error', error);
+          else {
+            localStorage.setItem('last_tracked_url', currentUrl);
+            localStorage.setItem('last_tracked_time', now.toString());
+          }
+        });
+      } else {
+        console.log('LexFlow: Skipping duplicate page view tracking (debounce active)');
+      }
 
     } catch (e) {
       console.error('LexFlow: Analytics failed', e);
