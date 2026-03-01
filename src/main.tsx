@@ -19,7 +19,10 @@ interface LexFlowOptions {
   messages?: Partial<LexFlowConfig['messages']>;
   defaultOpen?: boolean;
   inline?: boolean;
+  onReady?: () => void;
 }
+
+let _root: any = null;
 
 const init = async (options: LexFlowOptions) => {
   // Prevent multiple initializations on the same page load
@@ -36,6 +39,20 @@ const init = async (options: LexFlowOptions) => {
     container.id = 'lexflow-root';
     document.body.appendChild(container);
   }
+
+  // Initialize root and render loading state immediately
+  if (!_root) {
+    _root = createRoot(container);
+  }
+
+  _root.render(
+    <div className="lexflow-engine-loading flex items-center justify-center w-full h-full bg-zinc-950 min-h-[400px]">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl border-2 border-white/5 border-t-white/20 animate-spin"></div>
+        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Iniciando LexFlow...</p>
+      </div>
+    </div>
+  );
 
   // Identity & Session Management (Source of Truth: CDN Engine)
   const visitorId = getVisitorId();
@@ -163,8 +180,7 @@ const init = async (options: LexFlowOptions) => {
     sessionId: sessionId
   };
 
-  const root = createRoot(container);
-  root.render(
+  _root.render(
     <React.StrictMode>
       <App
         config={config}
@@ -177,10 +193,23 @@ const init = async (options: LexFlowOptions) => {
       />
     </React.StrictMode>
   );
+
+  if (options.onReady) {
+    // Small delay to ensure React has started rendering
+    setTimeout(options.onReady, 100);
+  }
 }
 
+const destroy = () => {
+  if (_root) {
+    _root.unmount();
+    _root = null;
+    (window as any)._lexflow_initialized = false;
+  }
+};
+
 // Expose to window
-(window as any).LexFlow = { init };
+(window as any).LexFlow = { init, destroy };
 
 // Auto-init if script has data-bot-id
 const script = document.currentScript as HTMLScriptElement;

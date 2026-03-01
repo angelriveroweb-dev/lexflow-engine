@@ -117,7 +117,7 @@ function App({ config, metadata, externalSessionId, defaultOpen, inline, saasNam
   }, [isOpen, launcherMessages.length]);
 
   return (
-    <div className="lexflow-engine font-sans selection:text-white" style={{ '--lexflow-accent': config.ui.accentColor } as React.CSSProperties}>
+    <div className={`lexflow-engine font-sans selection:text-white ${inline ? 'w-full h-full relative overflow-hidden' : ''}`} style={{ '--lexflow-accent': config.ui.accentColor } as React.CSSProperties}>
       {/* Launcher Button & Hook Messages */}
       <AnimatePresence>
         {!isOpen && !inline && (
@@ -199,12 +199,12 @@ function App({ config, metadata, externalSessionId, defaultOpen, inline, saasNam
             exit={{ opacity: 0, y: 40 }}
             transition={{ type: "spring", damping: 28, stiffness: 220 }}
             className={inline 
-              ? "relative w-full h-full flex flex-col bg-zinc-950 overflow-hidden"
+              ? "relative w-full h-full flex flex-col bg-zinc-950 overflow-hidden border-0 rounded-none"
               : "fixed z-[10000] inset-0 w-full h-[100dvh] rounded-none md:inset-auto md:bottom-20 md:right-6 md:w-[400px] md:h-[650px] md:max-h-[85vh] md:max-w-[calc(100vw-3rem)] md:rounded-3xl flex flex-col bg-zinc-950 md:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] border-0 md:border md:border-white/5 overflow-hidden md:ring-1 md:ring-white/10"
             }
           >
             {/* Header */}
-            <div className="p-5 border-b border-white/5 bg-zinc-900/50 backdrop-blur-xl flex items-center justify-between">
+            <div className="p-5 border-b border-white/5 bg-zinc-900/50 backdrop-blur-xl flex items-center justify-between shrink-0">
               <div className="flex items-center gap-4">
                 {!inline && (
                   <button

@@ -130,7 +130,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
     return (
         <div
-            className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-6 custom-scrollbar min-h-0 scrollbar-hide"
+            className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-6 custom-scrollbar min-h-0"
             role="log"
             aria-label="Conversación"
             aria-live="polite"
