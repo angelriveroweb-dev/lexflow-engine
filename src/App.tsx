@@ -7,15 +7,16 @@ import { ChatInput } from './components/chat/ChatInput'
 import { getVisitorId } from './lib/utils'
 import type { LexFlowConfig } from './core/ConfigLoader'
 
-function App({ config, metadata, externalSessionId, defaultOpen, saasName, version }: {
+function App({ config, metadata, externalSessionId, defaultOpen, inline, saasName, version }: {
   config: LexFlowConfig,
   metadata?: Record<string, any>,
   externalSessionId?: string,
   defaultOpen?: boolean,
+  inline?: boolean,
   saasName?: string,
   version?: string
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen || false)
+  const [isOpen, setIsOpen] = useState(inline || defaultOpen || false)
   const { messages, isLoading, isAnalyzing, sendMessage, sessionId, clearHistory, abortRequest } = useChat({
     config,
     metadata,
@@ -119,7 +120,7 @@ function App({ config, metadata, externalSessionId, defaultOpen, saasName, versi
     <div className="lexflow-engine font-sans selection:text-white" style={{ '--lexflow-accent': config.ui.accentColor } as React.CSSProperties}>
       {/* Launcher Button & Hook Messages */}
       <AnimatePresence>
-        {!isOpen && (
+        {!isOpen && !inline && (
           <div className="fixed bottom-6 right-6 z-[9999] flex items-center gap-3">
             {/* Hook Messages - Pill Style */}
             <AnimatePresence mode="wait">
@@ -197,18 +198,23 @@ function App({ config, metadata, externalSessionId, defaultOpen, saasName, versi
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}
             transition={{ type: "spring", damping: 28, stiffness: 220 }}
-            className="fixed z-[10000] inset-0 w-full h-[100dvh] rounded-none md:inset-auto md:bottom-20 md:right-6 md:w-[400px] md:h-[650px] md:max-h-[85vh] md:max-w-[calc(100vw-3rem)] md:rounded-3xl flex flex-col bg-zinc-950 md:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] border-0 md:border md:border-white/5 overflow-hidden md:ring-1 md:ring-white/10"
+            className={inline 
+              ? "relative w-full h-full flex flex-col bg-zinc-950 overflow-hidden"
+              : "fixed z-[10000] inset-0 w-full h-[100dvh] rounded-none md:inset-auto md:bottom-20 md:right-6 md:w-[400px] md:h-[650px] md:max-h-[85vh] md:max-w-[calc(100vw-3rem)] md:rounded-3xl flex flex-col bg-zinc-950 md:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] border-0 md:border md:border-white/5 overflow-hidden md:ring-1 md:ring-white/10"
+            }
           >
             {/* Header */}
             <div className="p-5 border-b border-white/5 bg-zinc-900/50 backdrop-blur-xl flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="md:hidden p-2 text-zinc-400 hover:text-white"
-                  aria-label="Cerrar chat"
-                >
-                  <ArrowLeft size={20} />
-                </button>
+                {!inline && (
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="md:hidden p-2 text-zinc-400 hover:text-white"
+                    aria-label="Cerrar chat"
+                  >
+                    <ArrowLeft size={20} />
+                  </button>
+                )}
                 <div className="relative">
                   <div className="w-12 h-12 rounded-2xl bg-zinc-950 border border-white/10 p-0.5 shadow-lg overflow-hidden">
                     {config.ui.avatarUrl ? (
@@ -238,13 +244,15 @@ function App({ config, metadata, externalSessionId, defaultOpen, saasName, versi
                 >
                   <Trash2 size={18} />
                 </button>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="hidden md:flex p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
-                  aria-label="Cerrar chat"
-                >
-                  <X size={24} />
-                </button>
+                {!inline && (
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="hidden md:flex p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                    aria-label="Cerrar chat"
+                  >
+                    <X size={24} />
+                  </button>
+                )}
               </div>
             </div>
 

@@ -18,6 +18,7 @@ interface LexFlowOptions {
   ui?: Partial<LexFlowConfig['ui']>;
   messages?: Partial<LexFlowConfig['messages']>;
   defaultOpen?: boolean;
+  inline?: boolean;
 }
 
 const init = async (options: LexFlowOptions) => {
@@ -169,7 +170,8 @@ const init = async (options: LexFlowOptions) => {
         config={config}
         metadata={finalMetadata}
         externalSessionId={sessionId!}
-        defaultOpen={options.defaultOpen}
+        defaultOpen={options.defaultOpen || options.inline}
+        inline={options.inline}
         saasName={saasName}
         version={version}
       />
